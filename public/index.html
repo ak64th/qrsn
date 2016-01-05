@@ -5,15 +5,31 @@
   <title>一战到底</title>
 </head>
 <body>
-<script type="text/javascript" src="bower_components/underscore/underscore.js"></script>
-<script type="text/javascript" src="bower_components/backbone/backbone.js"></script>
+<script type="text/javascript" src="/bower_components/jquery/dist/jquery.js"></script>
+<script type="text/javascript" src="/bower_components/underscore/underscore.js"></script>
+<script type="text/javascript" src="/bower_components/backbone/backbone.js"></script>
 <script>
   appRouter = Backbone.Router.extend({
     routes: {
-      "*path":      "default"
+      "*code": "loadGame"
     },
-    default : function(path) {
-      console.log('Default route:' + path);
+    loadGame : function(code) {
+      console.log('Loading game of code:' + code);
+      var targetUrlRoot = '/data/' + code + '/';
+      var configUrl = targetUrlRoot + 'config.json';
+      $.ajax({
+        url: configUrl,
+        type:'HEAD',
+        error: function() {
+          console.log('活动不存在');
+        },
+        success: function() {
+          console.log('活动存在');
+          $.getJSON(configUrl, function(data){
+            console.log(data);
+          })
+        }
+      });
     }
   });
 
