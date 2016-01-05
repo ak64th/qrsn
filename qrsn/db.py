@@ -1,4 +1,6 @@
-from peewee import SqliteDatabase, Model, IntegerField, CharField
+from datetime import datetime
+
+from peewee import SqliteDatabase, Model, IntegerField, CharField, DateTimeField
 
 db = SqliteDatabase('node.db', threadlocals=True)
 
@@ -13,6 +15,8 @@ class PeeweeConnectionMiddleware(object):
 
 
 class Base(Model):
+    created = DateTimeField(default=datetime.utcnow)
+
     class Meta:
         database = db
 
