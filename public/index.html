@@ -2,9 +2,23 @@
 <html>
 <head lang="en">
   <meta charset="UTF-8">
-  <title></title>
+  <title>一战到底</title>
 </head>
 <body>
+<script type="text/javascript" src="bower_components/underscore/underscore.js"></script>
+<script type="text/javascript" src="bower_components/backbone/backbone.js"></script>
+<script>
+  appRouter = Backbone.Router.extend({
+    routes: {
+      "*path":      "default"
+    },
+    default : function(path) {
+      console.log('Default route:' + path);
+    }
+  });
 
+  var router = new appRouter();
+  Backbone.history.start({pushState:true});
+</script>
 </body>
 </html>

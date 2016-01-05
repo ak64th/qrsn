@@ -1,0 +1,22 @@
+{
+  "name": "YiZhan",
+  "version": "0.0.0",
+  "homepage": "https://github.com/ak64th/qrsn",
+  "authors": [
+    "郁骏 <ak64th@gmail.com>"
+  ],
+  "description": "YiZhanDaoDi project frontend pages",
+  "main": "main.js",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "marionette": "~2.4.4"
+  }
+}
