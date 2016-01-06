@@ -6,8 +6,13 @@
 </head>
 <body>
 <script type="text/template" id="tpl_question">
-    <div class="content">{{content}}</div>
-    <ul class="option-list"></ul>
+  <div class="content">{{content}}</div>
+  <div class="option-list"></div>
+  <input type='submit'>
+</script>
+<script type="text/template" id="tpl_option">
+  <input type='radio' id='option-{{id}}'>
+  <label for='option-{{id}}'>{{content}}</label>
 </script>
 <script type="text/javascript" src="/bower_components/underscore/underscore.js"></script>
 <script type="text/javascript" src="/bower_components/jquery/dist/jquery.js"></script>
@@ -20,19 +25,19 @@ app = {}
 app.Option = Backbone.RelationalModel.extend({});
 
 app.Question = Backbone.RelationalModel.extend({
-    relations: [{
-        type: Backbone.HasMany,
-        key: 'options',
-        relatedModel: 'app.Option'
-    }]
+  relations: [{
+    type: Backbone.HasMany,
+    key: 'options',
+    relatedModel: 'app.Option'
+  }]
 });
 
 app.QuestionCollection = Backbone.Collection.extend({
-    model: app.Question
+  model: app.Question
 })
 
 app.QuestionView = Backbone.View.extend({
-  tagName: 'div',
+  tagName: 'form',
   className: 'question',
   template: Handlebars.compile($('#tpl_question').html()),
   render: function(){
@@ -55,10 +60,11 @@ app.QuestionView = Backbone.View.extend({
 });
 
 app.OptionView = Backbone.View.extend({
-  tagName: 'li',
+  tagName: 'div',
   className: 'question-option',
+  template: Handlebars.compile($('#tpl_option').html()),
   render: function(){
-    this.$el.html(this.model.get('content'));
+    this.$el.html(this.template(this.model.toJSON()));
     return this;
   }
 })
