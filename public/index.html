@@ -5,36 +5,79 @@
   <title>一战到底</title>
 </head>
 <body>
-<script type="text/javascript" src="/bower_components/jquery/dist/jquery.js"></script>
+<script type="text/template" id="tpl_question">
+    <div class="content">{{content}}</div>
+    <ul class="option-list"></ul>
+</script>
 <script type="text/javascript" src="/bower_components/underscore/underscore.js"></script>
+<script type="text/javascript" src="/bower_components/jquery/dist/jquery.js"></script>
 <script type="text/javascript" src="/bower_components/backbone/backbone.js"></script>
+<script type="text/javascript" src="/bower_components/backbone-relational/backbone-relational.js"></script>
+<script type="text/javascript" src="/bower_components/handlebars/handlebars.js"></script>
 <script>
-  appRouter = Backbone.Router.extend({
-    routes: {
-      "*code": "loadGame"
-    },
-    loadGame : function(code) {
-      console.log('Loading game of code:' + code);
-      var targetUrlRoot = '/data/' + code + '/';
-      var configUrl = targetUrlRoot + 'config.json';
-      $.ajax({
-        url: configUrl,
-        type:'HEAD',
-        error: function() {
-          console.log('活动不存在');
-        },
-        success: function() {
-          console.log('活动存在');
-          $.getJSON(configUrl, function(data){
-            console.log(data);
-          })
-        }
-      });
-    }
-  });
+app = {}
 
-  var router = new appRouter();
-  Backbone.history.start({pushState:true});
+app.Option = Backbone.RelationalModel.extend({});
+
+app.Question = Backbone.RelationalModel.extend({
+    relations: [{
+        type: Backbone.HasMany,
+        key: 'options',
+        relatedModel: 'app.Option'
+    }]
+});
+
+app.QuestionCollection = Backbone.Collection.extend({
+    model: app.Question
+})
+
+app.QuestionView = Backbone.View.extend({
+  tagName: 'div',
+  className: 'question',
+  template: Handlebars.compile($('#tpl_question').html()),
+  render: function(){
+    this.$el.html(this.template(this.model.toJSON()));
+    this.renderAllOptions();
+    return this;
+  },
+  renderOption: function(option){
+    var view = new app.OptionView({model:option});
+    this.$('option-list').append(view.render().el);
+  },
+  renderAllOptions: function(){
+    var questionOptions = questionView.model.get('options').shuffle();
+    _.each(questionOptions, function(option){
+      var view = new app.OptionView({model:option});
+      this.$('.option-list').append(view.render().el);
+    }, this);
+    return this;
+  }
+});
+
+app.OptionView = Backbone.View.extend({
+  tagName: 'li',
+  className: 'question-option',
+  render: function(){
+    this.$el.html(this.model.get('content'));
+    return this;
+  }
+})
+
+question = new app.Question({
+  id: 1,
+  content: '第一题内容',
+  options: [
+    {id: 1, content: '选项1'},
+    {id: 2, content: '选项2'},
+    {id: 3, content: '选项3'},
+    {id: 4, content: '选项4'}
+  ]
+})
+
+var questionView = new app.QuestionView({model: question});
+
+$("body").append(questionView.render().el);
+
 </script>
 </body>
 </html>
