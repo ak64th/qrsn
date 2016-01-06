@@ -10,8 +10,12 @@
   <div class="option-list"></div>
   <input type='submit'>
 </script>
-<script type="text/template" id="tpl_option">
+<script type="text/template" id="tpl_option_single">
   <input type='radio' id='option-<%= id %>' name='question-option'>
+  <label for='option-<%= id %>'><%= content %></label>
+</script>
+<script type="text/template" id="tpl_option_multi">
+  <input type='checkbox' id='option-<%= id %>' name='question-option'>
   <label for='option-<%= id %>'><%= content %></label>
 </script>
 <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
@@ -20,7 +24,8 @@
 <script>
 app = {}
 
-app.Option = Backbone.Model.extend({});
+app.Option = Backbone.Model.extend({
+});
 
 app.Question = Backbone.Model.extend({});
 
@@ -28,43 +33,87 @@ app.QuestionCollection = Backbone.Collection.extend({
   model: app.Question
 })
 
+app.OptionCollection = Backbone.Collection.extend({
+  model: app.Option
+})
+
 app.QuestionView = Backbone.View.extend({
   tagName: 'form',
   className: 'question',
   template: _.template($('#tpl_question').html()),
+  initialize: function(){
+    var optionData = this.model.get('options');
+    var questionOptions =  new app.OptionCollection(optionData);
+    this.model.set('options', questionOptions);
+    this.listenTo(questionOptions, 'change:checked', this.toggleChecked);
+  },
   render: function(){
     this.$el.html(this.template(this.model.toJSON()));
     this.renderAllOptions();
     return this;
   },
-  renderOption: function(option){
-    var view = new app.OptionView({model:option});
-    this.$('option-list').append(view.render().el);
+  renderOption: function(model){
+    if(this.model.get('type') == 'multi'){
+      var ViewClass = app.MultiSelectionView
+    } else {
+      var ViewClass = app.SingleSelectionView
+    }
+    var view = new ViewClass({model:model});
+    this.$('.option-list').append(view.render().el);
   },
   renderAllOptions: function(){
-    var questionOptions = _.shuffle(questionView.model.get('options'));
-    _.each(questionOptions, function(data){
-      var model = new app.Option(data);
-      var view = new app.OptionView({model:model});
-      this.$('.option-list').append(view.render().el);
-    }, this);
+    var questionOptions = _.shuffle(this.model.get('options').models);
+    _.each(questionOptions, this.renderOption, this);
     return this;
+  },
+  toggleChecked: function(model){
+    console.log('toggle checked event triggered');
+    if(this.model.get('type') == 'multi'){
+      this.checkedOptions = _.pluck(
+        this.model.get('options').filter('checked'), 'id'
+      );
+    } else {
+      this.checkedOptions = [ model.id ];
+    }
+    console.log(this.checkedOptions);
   }
 });
 
 app.OptionView = Backbone.View.extend({
   tagName: 'div',
   className: 'question-option',
-  template: _.template($('#tpl_option').html()),
+  events: {
+    'change input': 'toggle'
+  },
   render: function(){
     this.$el.html(this.template(this.model.toJSON()));
     return this;
   }
-})
+});
+
+app.SingleSelectionView = app.OptionView.extend({
+  template: _.template($('#tpl_option_single').html()),
+  toggle: function(){
+    console.log('toggle event triggered');
+    this.model.set('checked', true);
+    console.log(this.model.toJSON());
+  },
+});
+
+app.MultiSelectionView = app.OptionView.extend({
+  template: _.template($('#tpl_option_multi').html()),
+  toggle: function(){
+    console.log('toggle event triggered');
+    var checked = this.model.get('checked');
+    this.model.set('checked', !checked);
+    console.log(this.model.toJSON());
+  },
+});
 
 question = new app.Question({
   id: 1,
   content: '根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。',
+  type: 'multi',
   options: [
     {id: 1, content: '投票表决'},
     {id: 2, content: '分组讨论'},
