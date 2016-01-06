@@ -6,31 +6,23 @@
 </head>
 <body>
 <script type="text/template" id="tpl_question">
-  <div class="content">{{content}}</div>
+  <div class="content"><%= content %></div>
   <div class="option-list"></div>
   <input type='submit'>
 </script>
 <script type="text/template" id="tpl_option">
-  <input type='radio' id='option-{{id}}'>
-  <label for='option-{{id}}'>{{content}}</label>
+  <input type='radio' id='option-<%= id %>' name='question-option'>
+  <label for='option-<%= id %>'><%= content %></label>
 </script>
-<script type="text/javascript" src="/bower_components/underscore/underscore.js"></script>
-<script type="text/javascript" src="/bower_components/jquery/dist/jquery.js"></script>
-<script type="text/javascript" src="/bower_components/backbone/backbone.js"></script>
-<script type="text/javascript" src="/bower_components/backbone-relational/backbone-relational.js"></script>
-<script type="text/javascript" src="/bower_components/handlebars/handlebars.js"></script>
+<script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="/bower_components/underscore/underscore-min.js"></script>
+<script type="text/javascript" src="/bower_components/backbone/backbone-min.js"></script>
 <script>
 app = {}
 
-app.Option = Backbone.RelationalModel.extend({});
+app.Option = Backbone.Model.extend({});
 
-app.Question = Backbone.RelationalModel.extend({
-  relations: [{
-    type: Backbone.HasMany,
-    key: 'options',
-    relatedModel: 'app.Option'
-  }]
-});
+app.Question = Backbone.Model.extend({});
 
 app.QuestionCollection = Backbone.Collection.extend({
   model: app.Question
@@ -39,7 +31,7 @@ app.QuestionCollection = Backbone.Collection.extend({
 app.QuestionView = Backbone.View.extend({
   tagName: 'form',
   className: 'question',
-  template: Handlebars.compile($('#tpl_question').html()),
+  template: _.template($('#tpl_question').html()),
   render: function(){
     this.$el.html(this.template(this.model.toJSON()));
     this.renderAllOptions();
@@ -50,9 +42,10 @@ app.QuestionView = Backbone.View.extend({
     this.$('option-list').append(view.render().el);
   },
   renderAllOptions: function(){
-    var questionOptions = questionView.model.get('options').shuffle();
-    _.each(questionOptions, function(option){
-      var view = new app.OptionView({model:option});
+    var questionOptions = _.shuffle(questionView.model.get('options'));
+    _.each(questionOptions, function(data){
+      var model = new app.Option(data);
+      var view = new app.OptionView({model:model});
       this.$('.option-list').append(view.render().el);
     }, this);
     return this;
@@ -62,7 +55,7 @@ app.QuestionView = Backbone.View.extend({
 app.OptionView = Backbone.View.extend({
   tagName: 'div',
   className: 'question-option',
-  template: Handlebars.compile($('#tpl_option').html()),
+  template: _.template($('#tpl_option').html()),
   render: function(){
     this.$el.html(this.template(this.model.toJSON()));
     return this;
@@ -71,12 +64,12 @@ app.OptionView = Backbone.View.extend({
 
 question = new app.Question({
   id: 1,
-  content: '第一题内容',
+  content: '根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。',
   options: [
-    {id: 1, content: '选项1'},
-    {id: 2, content: '选项2'},
-    {id: 3, content: '选项3'},
-    {id: 4, content: '选项4'}
+    {id: 1, content: '投票表决'},
+    {id: 2, content: '分组讨论'},
+    {id: 3, content: '领导审批'},
+    {id: 4, content: '公司决定'}
   ]
 })
 
