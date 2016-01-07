@@ -20,7 +20,10 @@ class GameResource(object):
     def __init__(self, redis_client):
         self.redis = redis_client
 
-    def on_get(self, req, resp, game_id, uid):
+    def on_get(self, **kwargs):
+        self.on_post(**kwargs)
+
+    def on_post(self, req, resp, game_id, uid):
         dispatch_map = {
             'start': self.game_start,
             'finish': self.game_finish
@@ -83,8 +86,11 @@ class GameResource(object):
 
 
 @falcon.before(check_or_set_uid)
-class QuestionResource(object):
-    def on_get(self, req, resp, game_id, question_id, uid):
+class AnsweredResource(object):
+    def on_get(self, **kwargs):
+        self.on_post(**kwargs)
+
+    def on_post(self, req, resp, game_id, question_id, uid):
         pass
 
 
@@ -93,4 +99,4 @@ api = application = falcon.API(middleware=[])
 r = redis.StrictRedis()
 
 api.add_route('/game/{game_id}', GameResource(r))
-api.add_route('/game/{game_id}/question/{question_id}', QuestionResource())
+api.add_route('/game/{game_id}/question/{question_id}/answered', AnsweredResource())
