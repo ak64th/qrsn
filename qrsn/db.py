@@ -3,6 +3,7 @@ from datetime import datetime
 from peewee import SqliteDatabase, Model, IntegerField, CharField, DateTimeField
 
 db = SqliteDatabase('node.db', threadlocals=True)
+db.connect()
 
 
 class PeeweeConnectionMiddleware(object):
@@ -23,7 +24,7 @@ class Base(Model):
 
 class Answered(Base):
     question = IntegerField(verbose_name=u'Question ID')
-    user = IntegerField(verbose_name=u'User ID')
+    user = CharField(verbose_name=u'UID')
     selected = CharField(verbose_name=u'Selected Option ID List')
     game = IntegerField(verbose_name=u'Game ID')
 
@@ -33,4 +34,6 @@ class Score(Base):
     game = IntegerField(verbose_name=u'Game ID')
     score = IntegerField(verbose_name=u'Score')
 
+
+Answered.create_table(fail_silently=True)
 

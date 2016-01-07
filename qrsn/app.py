@@ -2,10 +2,11 @@ import falcon
 import uuid
 import redis
 import simplejson as json
-import datetime
+from db import Answered
 
 
 safe_int = lambda i: int(i) if i else i
+
 
 def check_or_set_uid(req, resp, resource, params):
     uid = req.cookies.get('uid')
@@ -28,7 +29,7 @@ class GameResource(object):
             'start': self.game_start,
             'finish': self.game_finish
         }
-        operation = req.get_param('operation', True).lower()
+        operation = req.get_param('operation', required=True).lower()
         method = dispatch_map.get(operation)
         if not method:
             resp.status = falcon.HTTP_400
@@ -47,7 +48,7 @@ class GameResource(object):
         })
 
     def game_finish(self, req, game_id, uid):
-        score = req.get_param_as_int('score', True)
+        score = req.get_param_as_int('score', required=True)
 
         # redis key names
         game_scores_key = 'game:%s:scores' % game_id
@@ -87,11 +88,10 @@ class GameResource(object):
 
 @falcon.before(check_or_set_uid)
 class AnsweredResource(object):
-    def on_get(self, **kwargs):
-        self.on_post(**kwargs)
-
-    def on_post(self, req, resp, game_id, question_id, uid):
-        pass
+    def on_get(self, req, resp, game_id, question_id, uid):
+        selected = req.get_param_as_list('selected', required=True)
+        Answered.create(question=question_id, user=uid, selected=','.join(selected), game=game_id)
+        resp.body = 'User %s selected %s for Question %s' % (uid, ','.join(selected), question_id)
 
 
 api = application = falcon.API(middleware=[])
