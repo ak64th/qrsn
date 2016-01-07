@@ -88,20 +88,7 @@ app.OptionView = Backbone.View.extend({
   render: function(){
     this.$el.html(this.template(this.model.toJSON()));
     return this;
-  }
-});
-
-app.SingleSelectionView = app.OptionView.extend({
-  template: _.template($('#tpl_option_single').html()),
-  toggle: function(){
-    console.log('toggle event triggered');
-    this.model.set('checked', true);
-    console.log(this.model.toJSON());
   },
-});
-
-app.MultiSelectionView = app.OptionView.extend({
-  template: _.template($('#tpl_option_multi').html()),
   toggle: function(){
     console.log('toggle event triggered');
     var checked = this.model.get('checked');
@@ -110,10 +97,18 @@ app.MultiSelectionView = app.OptionView.extend({
   },
 });
 
+app.SingleSelectionView = app.OptionView.extend({
+  template: _.template($('#tpl_option_single').html())
+});
+
+app.MultiSelectionView = app.OptionView.extend({
+  template: _.template($('#tpl_option_multi').html())
+});
+
 question = new app.Question({
   id: 1,
   content: '根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。',
-  type: 'multi',
+  type: 'single',
   options: [
     {id: 1, content: '投票表决'},
     {id: 2, content: '分组讨论'},
