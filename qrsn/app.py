@@ -1,21 +1,96 @@
 import falcon
-from db import PeeweeConnectionMiddleware
+import uuid
+import redis
+import simplejson as json
+import datetime
 
 
-class GamesResource(object):
-    def __init__(self, db):
-        self.db = db
+safe_int = lambda i: int(i) if i else i
 
-    def on_get(self, req, resp):
+def check_or_set_uid(req, resp, resource, params):
+    uid = req.cookies.get('uid')
+    if not uid:
+        uid = uuid.uuid4().hex[:8]
+        resp.set_cookie("uid", uid, max_age=600, secure=False)
+    params['uid'] = uid
 
-        resp.status = falcon.HTTP_200  # This is the default status
-        resp.body = ('\nTwo things awe me most, the starry sky '
-                     'above me and the moral law within me.\n'
-                     '\n'
-                     '    ~ Immanuel Kant\n\n')
 
-api = application = falcon.API(middleware=[
-    PeeweeConnectionMiddleware(),
-])
+@falcon.before(check_or_set_uid)
+class GameResource(object):
+    def __init__(self, redis_client):
+        self.redis = redis_client
 
-app.add_route('/games', things = GamesResource())
+    def on_get(self, req, resp, game_id, uid):
+        dispatch_map = {
+            'start': self.game_start,
+            'finish': self.game_finish
+        }
+        operation = req.get_param('operation', True).lower()
+        method = dispatch_map.get(operation)
+        if not method:
+            resp.status = falcon.HTTP_400
+        else:
+            resp.body = method(req, game_id, uid)
+
+    def game_start(self, req, game_id, uid):
+        p = self.redis.pipeline()
+        p.sadd('game:%s:users' % game_id, uid)
+        p.incr('game:%s:total' % game_id)
+        is_new, total = p.execute()
+        return json.dumps({
+            'message': 'Game %s for user %s started' % (game_id, uid),
+            'is_new': is_new,
+            'total': total
+        })
+
+    def game_finish(self, req, game_id, uid):
+        score = req.get_param_as_int('score', True)
+
+        # redis key names
+        game_scores_key = 'game:%s:scores' % game_id
+        user_best_score_key = 'game:%s:user:%s:best:score' % (game_id, uid)
+        user_best_rank_key = 'game:%s:user:%s:best:rank' % (game_id, uid)
+
+        p = self.redis.pipeline()
+        p.zadd(game_scores_key, score, score)
+        p.zrevrank(game_scores_key, score)
+        p.get(user_best_score_key)
+        p.get(user_best_rank_key)
+
+        # cast results to int
+        rank, best, best_rank = map(safe_int, p.execute()[1:])
+
+        # update best score and rank
+        if best is None or score > best:
+            best = score
+            p.set(user_best_score_key, score)
+        if best_rank is None or rank < best_rank:
+            best_rank = rank
+            p.set(user_best_rank_key, rank)
+        p.execute()
+
+        # rank is 0-based
+        rank += 1
+        best_rank += 1
+
+        return json.dumps({
+            'message': 'Game %s for user %s finished' % (game_id, uid),
+            'score': score,
+            'rank': rank,
+            'best': best,
+            'best_rank': best_rank
+        })
+
+
+@falcon.before(check_or_set_uid)
+class QuestionResource(object):
+    def on_get(self, req, resp, game_id, question_id, uid):
+        pass
+
+
+api = application = falcon.API(middleware=[])
+
+r = redis.StrictRedis()
+
+api.add_route('/game/{game_id}', GameResource(r))
+api.add_route('/game/{game_id}/question/{question_id}', QuestionResource())
