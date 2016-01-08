@@ -5,6 +5,8 @@
   <title>一战到底</title>
 </head>
 <body>
+<div id="app_container">
+</div>
 <script type="text/template" id="tpl_question">
   <div class="content"><%= content %></div>
   <div class="option-list"></div>
@@ -105,21 +107,55 @@ app.MultiSelectionView = app.OptionView.extend({
   template: _.template($('#tpl_option_multi').html())
 });
 
-question = new app.Question({
-  id: 1,
-  content: '根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。',
-  type: 'single',
-  options: [
-    {id: 1, content: '投票表决'},
-    {id: 2, content: '分组讨论'},
-    {id: 3, content: '领导审批'},
-    {id: 4, content: '公司决定'}
-  ]
-})
+app.ApplicationView = Backbone.View.extend({
+  el: $('#app_container'),
+  dataRoot: '/data/',
+  initialize: function(options){
+    this.game_code = options.game_code;
+    this.gameDataRoot = this.dataRoot + this.game_code + '/';
+    this.loadConfig()
+        .then(_.bind(this.renderWelcome, this));
+  },
+  loadConfig: function(){
+    var configUrl = this.gameDataRoot + 'config.json';
+    return $.getJSON(configUrl).then(_.bind(function(data){
+      this.game_id = data.id;
+      this.startAt = Date.parse(data.start_at);
+      this.endAt = Date.parse(data.end_at);
+      this.welcome = data.welcome;
+    }, this));
+  },
+  renderWelcome: function(){
+    this.$el.html(this.welcome);
+  },
+  renderQuestion: function(question){
+    this.currentQuestion = question;
+    var questionView = new app.QuestionView({model: question});
+    this.$el.append(questionView.render().el);
+  }
+});
 
-var questionView = new app.QuestionView({model: question});
+var game_code = window.location.hash.slice(1);
+var application = new app.ApplicationView({game_code: game_code});
+// application.loadConfig();
 
-$("body").append(questionView.render().el);
+// var question = new app.Question({
+//   id: 1,
+//   content: '根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。',
+//   type: 'single',
+//   options: [
+//     {id: 1, content: '投票表决'},
+//     {id: 2, content: '分组讨论'},
+//     {id: 3, content: '领导审批'},
+//     {id: 4, content: '公司决定'}
+//   ]
+// });
+
+// var questionView = new app.QuestionView({model: question});
+
+// $("body").append(questionView.render().el);
+
+// application.renderQuestion(question);
 
 </script>
 </body>
