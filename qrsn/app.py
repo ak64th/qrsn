@@ -12,7 +12,7 @@ def check_or_set_uid(req, resp, resource, params):
     uid = req.cookies.get('uid')
     if not uid:
         uid = uuid.uuid4().hex[:8]
-        resp.set_cookie("uid", uid, max_age=600, secure=False)
+        resp.set_cookie("uid", uid, max_age=600, path='/', secure=False, http_only=False)
     params['uid'] = uid
 
 
@@ -21,10 +21,7 @@ class GameResource(object):
     def __init__(self, redis_client):
         self.redis = redis_client
 
-    def on_get(self, **kwargs):
-        self.on_post(**kwargs)
-
-    def on_post(self, req, resp, game_id, uid):
+    def on_get(self, req, resp, game_id, uid):
         dispatch_map = {
             'start': self.game_start,
             'finish': self.game_finish
