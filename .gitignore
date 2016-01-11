@@ -7,3 +7,5 @@ env/
 *.log
 *.db
 *.bak
+*.conf
+*.ini
