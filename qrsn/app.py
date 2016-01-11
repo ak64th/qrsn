@@ -12,7 +12,7 @@ def check_or_set_uid(req, resp, resource, params):
     uid = req.cookies.get('uid')
     if not uid:
         uid = uuid.uuid4().hex[:8]
-        resp.set_cookie("uid", uid, max_age=600, path='/', secure=False, http_only=False)
+        resp.set_cookie("uid", uid, max_age=600, path='/rest', secure=False, http_only=False)
     params['uid'] = uid
 
 
@@ -91,9 +91,9 @@ class AnsweredResource(object):
         resp.body = 'User %s selected %s for Question %s' % (uid, ','.join(selected), question_id)
 
 
-api = application = falcon.API(middleware=[])
+api = falcon.API()
 
 r = redis.StrictRedis()
 
-api.add_route('/game/{game_id}', GameResource(r))
-api.add_route('/game/{game_id}/question/{question_id}/answered', AnsweredResource())
+api.add_route('/rest/game/{game_id}', GameResource(r))
+api.add_route('/rest/game/{game_id}/question/{question_id}/answered', AnsweredResource())
