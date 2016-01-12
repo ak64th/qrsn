@@ -20,142 +20,60 @@
   <input type='checkbox' id='option-<%= id %>' name='question-option'>
   <label for='option-<%= id %>'><%= content %></label>
 </script>
+<script type='text/template' id='tpl_welcome'>
+  <%= welcome %>
+</script>
+<script type="text/template" id="tpl_too_early">
+  <section class="reject">
+    亲，本次活动未开始，<br />
+    活动很精彩，敬请期待哦~~
+  </section>
+</script>
+<script type="text/template" id="tpl_too_late">
+  <section class="reject">
+    亲，本次活动已结束，<br />
+    下次要记得赶早哦~~~
+  </section>
+</script>
+<script type="text/template" id="tpl_no_more_chance">
+  <section class="reject">
+    亲，您的答题次数已经用完，<br />
+    下次活动再努力哦~~~
+  </section>
+</script>
 <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="/bower_components/underscore/underscore-min.js"></script>
 <script type="text/javascript" src="/bower_components/backbone/backbone-min.js"></script>
+<script type="text/javascript" src="/script/main.js"></script>
 <script>
-app = {}
-
-app.Option = Backbone.Model.extend({
-});
-
-app.Question = Backbone.Model.extend({});
-
-app.QuestionCollection = Backbone.Collection.extend({
-  model: app.Question
-})
-
-app.OptionCollection = Backbone.Collection.extend({
-  model: app.Option
-})
-
-app.QuestionView = Backbone.View.extend({
-  tagName: 'form',
-  className: 'question',
-  template: _.template($('#tpl_question').html()),
-  initialize: function(){
-    var optionData = this.model.get('options');
-    var questionOptions =  new app.OptionCollection(optionData);
-    this.model.set('options', questionOptions);
-    this.listenTo(questionOptions, 'change:checked', this.toggleChecked);
-  },
-  render: function(){
-    this.$el.html(this.template(this.model.toJSON()));
-    this.renderAllOptions();
-    return this;
-  },
-  renderOption: function(model){
-    if(this.model.get('type') == 'multi'){
-      var ViewClass = app.MultiSelectionView
-    } else {
-      var ViewClass = app.SingleSelectionView
-    }
-    var view = new ViewClass({model:model});
-    this.$('.option-list').append(view.render().el);
-  },
-  renderAllOptions: function(){
-    var questionOptions = _.shuffle(this.model.get('options').models);
-    _.each(questionOptions, this.renderOption, this);
-    return this;
-  },
-  toggleChecked: function(model){
-    console.log('toggle checked event triggered');
-    if(this.model.get('type') == 'multi'){
-      this.checkedOptions = _.pluck(
-        this.model.get('options').filter('checked'), 'id'
-      );
-    } else {
-      this.checkedOptions = [ model.id ];
-    }
-    console.log(this.checkedOptions);
-  }
-});
-
-app.OptionView = Backbone.View.extend({
-  tagName: 'div',
-  className: 'question-option',
-  events: {
-    'change input': 'toggle'
-  },
-  render: function(){
-    this.$el.html(this.template(this.model.toJSON()));
-    return this;
-  },
-  toggle: function(){
-    console.log('toggle event triggered');
-    var checked = this.model.get('checked');
-    this.model.set('checked', !checked);
-    console.log(this.model.toJSON());
-  },
-});
-
-app.SingleSelectionView = app.OptionView.extend({
-  template: _.template($('#tpl_option_single').html())
-});
-
-app.MultiSelectionView = app.OptionView.extend({
-  template: _.template($('#tpl_option_multi').html())
-});
-
-app.ApplicationView = Backbone.View.extend({
-  el: $('#app_container'),
-  dataRoot: '/data/',
-  initialize: function(options){
-    this.game_code = options.game_code;
-    this.gameDataRoot = this.dataRoot + this.game_code + '/';
-    this.loadConfig()
-        .then(_.bind(this.renderWelcome, this));
-  },
-  loadConfig: function(){
-    var configUrl = this.gameDataRoot + 'config.json';
-    return $.getJSON(configUrl).then(_.bind(function(data){
-      this.game_id = data.id;
-      this.startAt = Date.parse(data.start_at);
-      this.endAt = Date.parse(data.end_at);
-      this.welcome = data.welcome;
-    }, this));
-  },
-  renderWelcome: function(){
-    this.$el.html(this.welcome);
-  },
-  renderQuestion: function(question){
-    this.currentQuestion = question;
-    var questionView = new app.QuestionView({model: question});
-    this.$el.append(questionView.render().el);
-  }
-});
-
 var game_code = window.location.hash.slice(1);
-var application = new app.ApplicationView({game_code: game_code});
-// application.loadConfig();
+var data_url_root = '/data/' + game_code + '/';
+$.getJSON(data_url_root + 'config.json').then(function(data){
+  var application = new app.ApplicationView({game_code: game_code, config: data});
+  var errorView = null;
+  var used_chances = parseInt(localStorage.getItem(game_code + '_count'));
+  if (used_chances > parseInt(data.max_chances)){
+    errorView = new app.RejectionNoMoreChanceView();
+  } else {
+    var now = new Date();
+    var start_at = new Date(data.start_at);
+    var end_at = new Date(data.end_at);
+    if(now < start_at){
+      errorView = new app.RejectionTooEarlyView();
+    } else if (now > end_at){
+      errorView = new app.RejectionTooLateView();
+    }
+  };
+  if(errorView){
+    application.loadView(errorView);
+  } else {
+    $('#app_container').html('start!');
+  }
+});
 
-// var question = new app.Question({
-//   id: 1,
-//   content: '根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。',
-//   type: 'single',
-//   options: [
-//     {id: 1, content: '投票表决'},
-//     {id: 2, content: '分组讨论'},
-//     {id: 3, content: '领导审批'},
-//     {id: 4, content: '公司决定'}
-//   ]
-// });
 
-// var questionView = new app.QuestionView({model: question});
 
-// $("body").append(questionView.render().el);
-
-// application.renderQuestion(question);
+// var application = new app.ApplicationView({game_code: game_code});
 
 </script>
 </body>

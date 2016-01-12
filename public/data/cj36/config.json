@@ -2,7 +2,17 @@
   "id": 1,
   "name": "示例活动",
   "welcome": "欢迎语",
-  "start_at": "2016-01-04T16:44:10+08:00",
-  "end_at": "2016-01-04T17:44:10+08:00",
-  "question_groups": 2
+  "type": "ordinary",
+  "max_chances": 300,
+  "count": {
+    "single": 15,
+    "multi": 5
+  },
+  "question_groups":{
+    "single": 2,
+    "multi": 2
+  },
+  "start_at": "2016-01-12T13:44:10+08:00",
+  "end_at": "2016-01-17T20:44:10+08:00",
+  "time_per_question": 30
 }
