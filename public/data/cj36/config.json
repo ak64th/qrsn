@@ -12,6 +12,11 @@
     "single": 2,
     "multi": 2
   },
+  "info_fields": [
+    ["name", "姓名"],
+    ["phone", "电话"],
+    ["addr", "地址"]
+  ],
   "start_at": "2016-01-12T13:44:10+08:00",
   "end_at": "2016-01-17T20:44:10+08:00",
   "time_per_question": 30
