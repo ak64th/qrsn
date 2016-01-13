@@ -21,7 +21,7 @@ class GameResource(object):
     def __init__(self, redis_client):
         self.redis = redis_client
 
-    def on_get(self, req, resp, game_id, uid):
+    def on_post(self, req, resp, game_id, uid):
         dispatch_map = {
             'start': self.game_start,
             'finish': self.game_finish
@@ -85,7 +85,7 @@ class GameResource(object):
 
 @falcon.before(check_or_set_uid)
 class AnsweredResource(object):
-    def on_get(self, req, resp, game_id, question_id, uid):
+    def on_post(self, req, resp, game_id, question_id, uid):
         selected = req.get_param_as_list('selected', required=True)
         Answered.create(question=question_id, user=uid, selected=','.join(selected), game=game_id)
         resp.body = 'User %s selected %s for Question %s' % (uid, ','.join(selected), question_id)
