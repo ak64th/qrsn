@@ -3,25 +3,61 @@
 <head lang="en">
   <meta charset="UTF-8">
   <title>一战到底</title>
+  <style>
+    .overlay {
+      position:fixed;
+      top: 0;
+      background-color: #000;
+      opacity: 0.8;
+      width: 100%;
+      height: 100%;
+    }
+    .dialogue {
+      position: absolute;
+      padding: 1rem 0;
+      background-color:#FFFFFF ;
+      border-radius: 0 0 0.3rem 0.3rem ;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 <div id="app_container">
 </div>
+<script type="text/template" id="tpl_modal">
+  <div class="overlay"></div>
+  <div class="dialogue">
+    <%- message %>
+    <button class="submit <%= button.class %>"><%= button.text %></button>
+  </div>
+</script>
 <script type="text/template" id="tpl_question">
   <div class="content"><%= content %></div>
-  <div class="option-list"></div>
-  <input type='submit'>
+  <div class="option_list"></div>
+  <input type="submit" class="submit">
 </script>
 <script type="text/template" id="tpl_option_single">
-  <input type='radio' id='option-<%= id %>' name='question-option'>
-  <label for='option-<%= id %>'><%= content %></label>
+  <input type='radio' id='option_<%= id %>' name='question_option'>
+  <label for='option_<%= id %>'><%= content %></label>
 </script>
 <script type="text/template" id="tpl_option_multi">
-  <input type='checkbox' id='option-<%= id %>' name='question-option'>
+  <input type='checkbox' id='option-<%= id %>' name='question_option'>
   <label for='option-<%= id %>'><%= content %></label>
 </script>
 <script type='text/template' id='tpl_welcome'>
-  <%= welcome %>
+  <%- content %>
+  <% if (!_.isEmpty(infoFields) ){ %>
+  <section class="info">
+  <h1>请完整填写以下资料：</h1>
+  <% _.each(infoFields, function(field){
+    var field_key = field[0];
+    var field_text = field[1];
+    saved = localStorage.getItem(field_key) || ''; %>
+    <input placeholder="<%= field_text %>" name="<%= field_key %>" value="<%= saved %>">
+  <% }) %>
+  </section>
+  <% } %>
+<input type="submit" class="submit" value="开始游戏">
 </script>
 <script type="text/template" id="tpl_too_early">
   <section class="reject">
@@ -46,34 +82,84 @@
 <script type="text/javascript" src="/bower_components/backbone/backbone-min.js"></script>
 <script type="text/javascript" src="/script/main.js"></script>
 <script>
-var game_code = window.location.hash.slice(1);
-var data_url_root = '/data/' + game_code + '/';
-$.getJSON(data_url_root + 'config.json').then(function(data){
-  var application = new app.ApplicationView({game_code: game_code, config: data});
-  var errorView = null;
-  var used_chances = parseInt(localStorage.getItem(game_code + '_count'));
-  if (used_chances > parseInt(data.max_chances)){
-    errorView = new app.RejectionNoMoreChanceView();
-  } else {
-    var now = new Date();
-    var start_at = new Date(data.start_at);
-    var end_at = new Date(data.end_at);
-    if(now < start_at){
-      errorView = new app.RejectionTooEarlyView();
-    } else if (now > end_at){
-      errorView = new app.RejectionTooLateView();
-    }
-  };
-  if(errorView){
-    application.loadView(errorView);
-  } else {
-    $('#app_container').html('start!');
+// var application = null;
+// var game_code = window.location.hash.slice(1);
+// var data_url_root = '/data/' + game_code + '/';
+// $.getJSON(data_url_root + 'config.json').then(function(data){
+//   application = new app.ApplicationView({game_code: game_code, config: data});
+//   var errorView = null;
+//   var used_chances = parseInt(localStorage.getItem(game_code + '_count'));
+//   if (used_chances > parseInt(data.max_chances)){
+//     errorView = new app.RejectionNoMoreChanceView();
+//   } else {
+//     var now = new Date();
+//     var start_at = new Date(data.start_at);
+//     var end_at = new Date(data.end_at);
+//     if(now < start_at){
+//       errorView = new app.RejectionTooEarlyView();
+//     } else if (now > end_at){
+//       errorView = new app.RejectionTooLateView();
+//     }
+//   };
+//   if(errorView){
+//     application.loadView(errorView);
+//   } else {
+//     application.prepareQuiz();
+//   }
+// });
+
+var question = new app.Question({
+  "id": 1,
+  "content": "根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。",
+  "type": "multi",
+  "options": [
+    {"id": 1, "content": "投票表决"},
+    {"id": 2, "content": "分组讨论"},
+    {"id": 3, "content": "领导审批"},
+    {"id": 4, "content": "公司决定"}
+  ],
+  "answer": [1,2,3]
+});
+
+app.TestView = Backbone.View.extend({
+
+  initialize: function(){
+    this.questionView = new app.QuestionView({model: question});
+    this.listenTo(this.questionView, 'finishQuestion', this.finishQuestion);
+  },
+  render: function(){
+    this.$el.append(this.questionView.render().el);
+    return this;
+  },
+  finishQuestion: function(answer, selected, isCorrect){
+    modalView = new app.ModalView({
+      message: "答题结束",
+      button: {
+        text: "下一题"
+      },
+      callback: _.bind(function(){
+        var questionOptions = this.questionView.model.get('options').models;
+        console.log(questionOptions);
+      }, this)
+    });
+    this.$el.append(modalView.render().el);
   }
 });
 
+var testView = new app.TestView();
+$('body').append(testView.render().el);
 
+// modalView = new app.ModalView({
+//   message: "亲，需填完信息才能开始哦~",
+//   button: {
+//     text: "重新填写"
+//   },
+//   callback: function(){
+//     console.log('Callback');
+//   }
+// });
 
-// var application = new app.ApplicationView({game_code: game_code});
+// $('body').append(modalView.render().el);
 
 </script>
 </body>

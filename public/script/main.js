@@ -13,6 +13,28 @@ var app = (function($, _, Backbone){
     CHALLENGE: 'challenge'
   };
 
+  app.ModalView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'modal_container',
+    template: _.template($('#tpl_modal').html()),
+    events: {
+      'click .submit': 'close'
+    },
+    initialize: function(options){
+      this.options = options;
+      this.callback = options.callback;
+    },
+    render: function(){
+      this.$el.html(this.template(this.options));
+      return this;
+    },
+    close: function(){
+      console.log('Close');
+      _.isFunction(this.callback) && this.callback();
+      this.remove();
+    }
+  });
+
   app.Option = Backbone.Model.extend({});
 
   app.Question = Backbone.Model.extend({});
@@ -31,25 +53,13 @@ var app = (function($, _, Backbone){
     model: app.Answered
   });
 
-  // app.Quiz = Backbone.Model.extend({
-  //   initialize: function(attributes) {
-  //     this.set('questions', new app.QuestionCollection());
-  //     this.set('answered', new app.AnsweredCollection());
-  //   },
-  //   hasStarted: function(now){
-  //     var now = now || new Date();
-  //     return this.startAt > now;
-  //   },
-  //   hasEnded: function(now){
-  //     var now = now || new Date();
-  //     return this.endAt < now;
-  //   }
-  // });
-
   app.QuestionView = Backbone.View.extend({
-    tagName: 'form',
+    tagName: 'div',
     className: 'question',
     template: _.template($('#tpl_question').html()),
+    events: {
+      'click .submit': 'onSubmit'
+    },
     initialize: function(){
       var optionData = this.model.get('options');
       var questionOptions =  new app.OptionCollection(optionData);
@@ -68,7 +78,7 @@ var app = (function($, _, Backbone){
         var ViewClass = app.SingleSelectionView
       }
       var view = new ViewClass({model:model});
-      this.$('.option-list').append(view.render().el);
+      this.$('.option_list').append(view.render().el);
     },
     renderAllOptions: function(){
       var questionOptions = _.shuffle(this.model.get('options').models);
@@ -84,12 +94,21 @@ var app = (function($, _, Backbone){
         this.checkedOptions = [ model.id ];
       }
       console.log(this.checkedOptions);
+    },
+    onSubmit: function(){
+      var answer = this.model.get('answer');
+      var selected = this.checkedOptions;
+      var isCorrect = this.checkAnswer(answer, selected);
+      this.trigger('finishQuestion', answer, selected, isCorrect);
+    },
+    checkAnswer: function(answer, selected){
+      return answer && selected && answer.length === selected.length && _.difference(answer, selecselectedted).length === 0;
     }
   });
 
   app.OptionView = Backbone.View.extend({
     tagName: 'div',
-    className: 'question-option',
+    className: 'question_option',
     events: {
       'change input': 'toggle'
     },
@@ -113,23 +132,6 @@ var app = (function($, _, Backbone){
     template: _.template($('#tpl_option_multi').html())
   });
 
-  app.WelcomeView = Backbone.View.extend({
-    tagName: 'div',
-    className: 'welcome',
-    template: _.template($('#tpl_welcome').html()),
-    initialize: function(){
-      this.content = options.content;
-      this.infoFields = options.infoFields;
-    },
-    render: function(){
-      this.$el.html(this.template({
-        content: this.content,
-        infoFields: this.infoFields
-      }));
-      return this;
-    }
-  });
-
   app.RejectionView = Backbone.View.extend({
     render: function(){
       this.$el.html(this.template());
@@ -149,28 +151,85 @@ var app = (function($, _, Backbone){
     template: _.template($('#tpl_no_more_chance').html())
   });
 
+  app.WelcomeView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'welcome',
+    template: _.template($('#tpl_welcome').html()),
+    events: {
+      'click .submit': 'onSubmit',
+    },
+    initialize: function(options){
+      this.content = options.content;
+      this.infoFields = options.infoFields;
+      this.quizId = options.quizId;
+    },
+    render: function(){
+      this.$el.html(this.template({
+        content: this.content,
+        infoFields: this.infoFields
+      }));
+      return this;
+    },
+    onSubmit: function(e){
+      var field_keys = _.unzip(this.infoFields)[0];
+      var validated = false;
+      var field_data = [];
+      if (field_keys.length){
+        validated = _(this.$('input')).chain()
+        .filter(function(input){
+          return _(field_keys).indexOf(input.name) >= 0;
+        })
+        .every(function(input){
+          if (input.value.length > 0){
+            field_data.push([input.name, input.value])
+            localStorage.setItem(input.name, input.value);
+            return true;
+          }
+          return false;
+        })
+        .value();
+      } else {
+        validated = true;
+      }
+      if(validated){
+        this.trigger('startQuiz', field_data);
+      } else {
+
+      }
+    }
+  });
+
+
+
   app.ApplicationView = Backbone.View.extend({
     el: $('#app_container'),
     dataRoot: '/data/',
+    apiRoot: '/rest/',
     initialize: function(options){
       this.game_code = options.game_code;
       this.gameDataRoot = this.dataRoot + this.game_code + '/';
       this.quizConfig = options.config;
-      console.log(this.quizConfig);
     },
     loadView: function(view){
       this.view && (this.view.close ? this.view.close() : this.view.remove());
       this.view = view;
       this.$el.append(this.view.render().el);
     },
-    // loadConfig: function(){
-    //   var configUrl = this.gameDataRoot + 'config.json';
-    //   return $.getJSON(configUrl).then(_.bind(function(data){
-    //     this.quizConfig = data;
-    //     this.quizConfig.start_at = new Date(this.quizConfig.start_at);
-    //     this.quizConfig.end_at = new Date(this.quizConfig.end_at);
-    //   }, this));
-    // },
+    prepareQuiz: function(){
+      console.log(this.quizConfig);
+      this.questions = new app.QuestionCollection();
+      this.answered = new app.AnsweredCollection();
+      var view = new app.WelcomeView({
+        content: this.quizConfig.welcome,
+        infoFields: this.quizConfig.info_fields,
+        quizId: this.quizConfig.id
+      });
+      this.listenToOnce(view, 'startQuiz', this.startQuiz);
+      this.loadView(view);
+    },
+    startQuiz: function(args){
+      console.log(args);
+    },
     renderWelcome: function(){
       this.$el.html(this.quiz.get('welcome'));
     },
