@@ -67,19 +67,23 @@ var app = (function($, _, Backbone){
     events: {
       'click .submit': 'onSubmit'
     },
-    initialize: function(){
+    initialize: function(options){
       var optionData = this.model.get('options');
       var questionOptions =  new app.OptionCollection(optionData);
       this.model.set('options', questionOptions);
       this.listenTo(questionOptions, 'change:checked', this.toggleChecked);
+      this.timeLimit = options.timeLimit || 0;
     },
     render: function(){
-      this.$el.html(this.template(this.model.toJSON()));
+      var data = this.model.toJSON();
+      data.timeLimit = this.timeLimit;
+      this.$el.html(this.template(data));
       this.renderAllOptions();
+      this.startTimer();
       return this;
     },
     renderOption: function(model){
-      if(this.model.get('type') == 'multi'){
+      if(this.model.get('type') == app.QUESTION_TYPE.MULTI){
         var ViewClass = app.MultiSelectionView
       } else {
         var ViewClass = app.SingleSelectionView
@@ -93,7 +97,7 @@ var app = (function($, _, Backbone){
       return this;
     },
     toggleChecked: function(model){
-      if(this.model.get('type') == 'multi'){
+      if(this.model.get('type') == app.QUESTION_TYPE.MULTI){
         this.checkedOptions = _.pluck(
           this.model.get('options').filter('checked'), 'id'
         );
@@ -102,14 +106,47 @@ var app = (function($, _, Backbone){
       }
       console.log(this.checkedOptions);
     },
-    onSubmit: function(){
+    submit: function(){
       var answer = this.model.get('answer');
       var selected = this.checkedOptions;
       var isCorrect = this.checkAnswer(answer, selected);
-      this.trigger('finishQuestion', answer, selected, isCorrect);
+      this.trigger('finish', answer, selected, isCorrect);
+    },
+    onSubmit: function(){
+      this.timer && clearInterval(this.timer);
+      this.submit();
+    },
+    onTimeout: function(){
+      this.timer && clearInterval(this.timer);
+      if (_.isEmpty(this.checkedOptions)){
+        var answer = this.model.get('answer');
+        this.trigger('timeout', answer);
+      } else {
+        this.submit();
+      }
     },
     checkAnswer: function(answer, selected){
       return answer && selected && answer.length === selected.length && _.difference(answer, selected).length === 0;
+    },
+    startTimer: function(){
+      this.timer = this.timeLimit && this.createTimer(this.timeLimit) || null;
+      return this.timer;
+    },
+    createTimer: function(timeLimit){
+      var counter = 0;
+      var timeLimit = timeLimit;
+      var timer = setInterval(_.bind(function(){
+        counter++;
+        console.log("counter #", counter, timeLimit);
+        if (counter >= timeLimit) {
+          this.onTimeout();
+        };
+        this.$('.timer').html( timeLimit - counter );
+      }, this), 1000);
+      return timer;
+    },
+    close: function(){
+      this.remove();
     }
   });
 
@@ -201,12 +238,13 @@ var app = (function($, _, Backbone){
       if(validated){
         this.trigger('startQuiz', field_data);
       } else {
-
+        app.modal({
+          message: "亲，需填完信息才能开始哦~",
+          button: { text: "关闭" }
+        });
       }
     }
   });
-
-
 
   app.ApplicationView = Backbone.View.extend({
     el: $('#app_container'),
@@ -236,9 +274,6 @@ var app = (function($, _, Backbone){
     },
     startQuiz: function(args){
       console.log(args);
-    },
-    renderWelcome: function(){
-      this.$el.html(this.quiz.get('welcome'));
     },
     renderQuestion: function(question){
       this.currentQuestion = question;
