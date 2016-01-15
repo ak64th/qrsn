@@ -113,8 +113,10 @@ var app = (function($, _, Backbone){
       this.trigger('finish', answer, selected, isCorrect);
     },
     onSubmit: function(){
-      this.timer && clearInterval(this.timer);
-      this.submit();
+      if (!_.isEmpty(this.checkedOptions)){
+        this.timer && clearInterval(this.timer);
+        this.submit();
+      }
     },
     onTimeout: function(){
       this.timer && clearInterval(this.timer);

@@ -154,13 +154,13 @@ app.QuizView = Backbone.View.extend({
   changeQuestion: function(){
     var question = this.questions.shift();
     this.questionView && this.questionView.remove();
-    this.questionView = new app.QuestionView({model: question, timeLimit: 5});
+    this.questionView = new app.QuestionView({model: question, timeLimit: this.config.time_per_question });
     this.listenToOnce(this.questionView, 'finish', this.finishQuestion);
     this.listenToOnce(this.questionView, 'timeout', this.questionTimeout)
     this.$el.append(this.questionView.render().el);
   },
-  finishQuestion: function(answer, selected, isCorrect, timeout, showAnswer){
-    var showAnswer = showAnswer || false;
+  finishQuestion: function(answer, selected, isCorrect, timeout){
+    var showAnswer = this.config.show_answer || false;
     var timeout = timeout || false;
     var message = timeout ? '亲，回答超时，注意答题时间哦~' : (
       isCorrect ? '亲，答题正确，好厉害哦~' : '亲，答题错误。'
@@ -169,7 +169,6 @@ app.QuizView = Backbone.View.extend({
       message += "正确答案:" + answer.join() + '。';
     }
     if(this.hasNext()){
-      console.log(this.currentQuestion);
       app.modal({
         message: message,
         button: { text: "下一题" },
@@ -184,7 +183,7 @@ app.QuizView = Backbone.View.extend({
     }
   },
   questionTimeout: function(answer){
-    this.finishQuestion(answer, [], false, true);
+    this.finishQuestion(answer, [], false, true, true);
   },
   hasNext: function(){
     return this.questions.length > 0;
@@ -196,7 +195,8 @@ app.QuizView = Backbone.View.extend({
 
 var view = new app.QuizView({
   config: {
-    "time_per_question": 5
+    "time_per_question": 0,
+    "show_answer": false
   }
 });
 $('body').append(view.render().el);
