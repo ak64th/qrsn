@@ -1,4 +1,3 @@
-
 var app = (function($, _, Backbone){
   app = {};
 
@@ -26,14 +25,22 @@ var app = (function($, _, Backbone){
     },
     render: function(){
       this.$el.html(this.template(this.options));
+      this.$('.dialogue').css({
+        'top': ($(window).height() - this.$el.height()) / 2,
+        'left': ($(window).width() - this.$el.width()) / 2,
+      });
       return this;
     },
     close: function(){
-      console.log('Close');
       _.isFunction(this.callback) && this.callback();
       this.remove();
     }
   });
+
+  app.modal = function(options){
+    var view = new app.ModalView(options);
+    $('body').append(view.render().el);
+  };
 
   app.Option = Backbone.Model.extend({});
 
@@ -102,7 +109,7 @@ var app = (function($, _, Backbone){
       this.trigger('finishQuestion', answer, selected, isCorrect);
     },
     checkAnswer: function(answer, selected){
-      return answer && selected && answer.length === selected.length && _.difference(answer, selecselectedted).length === 0;
+      return answer && selected && answer.length === selected.length && _.difference(answer, selected).length === 0;
     }
   });
 

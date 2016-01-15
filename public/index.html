@@ -44,6 +44,10 @@
   <input type='checkbox' id='option-<%= id %>' name='question_option'>
   <label for='option-<%= id %>'><%= content %></label>
 </script>
+<script type='text/template' id='tpl_quiz_panel'>
+  <spam>已回答<%= answered.length %>题</samp>
+  <span>得到<%= grade %>分</span>
+</script>
 <script type='text/template' id='tpl_welcome'>
   <%- content %>
   <% if (!_.isEmpty(infoFields) ){ %>
@@ -108,58 +112,77 @@
 //   }
 // });
 
-var question = new app.Question({
-  "id": 1,
-  "content": "根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。",
-  "type": "multi",
-  "options": [
-    {"id": 1, "content": "投票表决"},
-    {"id": 2, "content": "分组讨论"},
-    {"id": 3, "content": "领导审批"},
-    {"id": 4, "content": "公司决定"}
-  ],
-  "answer": [1,2,3]
-});
 
-app.TestView = Backbone.View.extend({
 
-  initialize: function(){
-    this.questionView = new app.QuestionView({model: question});
-    this.listenTo(this.questionView, 'finishQuestion', this.finishQuestion);
+
+
+
+var questions = new app.QuestionCollection([
+  {
+    "id": 1,
+    "content": "根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。",
+    "type": "multi",
+    "options": [
+      {"id": 1, "content": "投票表决"},
+      {"id": 2, "content": "分组讨论"},
+      {"id": 3, "content": "领导审批"},
+      {"id": 4, "content": "公司决定"}
+    ],
+    "answer": [1,2,3]
   },
-  render: function(){
+  {
+    "id": 2,
+    "content": "根据集团公司《关于加强民主审议涉及员工切身利益规章制度和重大事项工作的意见》，企业要充分发扬民主，做好沟通协调工作。要严格履行职代会的民主程序，充分听取员工意见和建议。在此基础上，进行（ ），形成决议。",
+    "type": "single",
+    "options": [
+      {"id": 1, "content": "投票表决"},
+      {"id": 2, "content": "分组讨论"},
+      {"id": 3, "content": "领导审批"},
+      {"id": 4, "content": "公司决定"}
+    ],
+    "answer": [4]
+  }
+]);
+
+app.QuizView = Backbone.View.extend({
+  tagName: 'div',
+  initialize: function(){
+    this.questions = questions;
+    this.changeQuestion();
+  },
+  changeQuestion: function(){
+    var question = this.questions.shift();
+    this.questionView && this.questionView.remove();
+    this.questionView = new app.QuestionView({model: question});
+    this.listenToOnce(this.questionView, 'finishQuestion', this.finishQuestion);
     this.$el.append(this.questionView.render().el);
-    return this;
   },
   finishQuestion: function(answer, selected, isCorrect){
-    modalView = new app.ModalView({
-      message: "答题结束",
-      button: {
-        text: "下一题"
-      },
-      callback: _.bind(function(){
-        var questionOptions = this.questionView.model.get('options').models;
-        console.log(questionOptions);
-      }, this)
-    });
-    this.$el.append(modalView.render().el);
+    if(this.hasNext()){
+      console.log(this.currentQuestion);
+      app.modal({
+        message: "答题结束，正确答案:" + answer.join(),
+        button: { text: "下一题" },
+        callback: _.bind(this.changeQuestion, this)
+      });
+    } else {
+      app.modal({
+        message: "游戏结束",
+        button: { text: "结束" },
+        callback: _.bind(this.finishQuiz, this)
+      });
+    }
+  },
+  hasNext: function(){
+    return this.questions.length > 0;
+  },
+  finishQuiz: function(){
+    console.log("结束");
   }
 });
 
-var testView = new app.TestView();
-$('body').append(testView.render().el);
-
-// modalView = new app.ModalView({
-//   message: "亲，需填完信息才能开始哦~",
-//   button: {
-//     text: "重新填写"
-//   },
-//   callback: function(){
-//     console.log('Callback');
-//   }
-// });
-
-// $('body').append(modalView.render().el);
+var view = new app.QuizView();
+$('body').append(view.render().el);
 
 </script>
 </body>
