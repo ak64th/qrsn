@@ -26,8 +26,7 @@ var app = (function($, _, Backbone){
     render: function(){
       this.$el.html(this.template(this.options));
       this.$('.dialogue').css({
-        'top': ($(window).height() - this.$el.height()) / 2,
-        'left': ($(window).width() - this.$el.width()) / 2,
+        'top': ($(window).height() - this.$el.height()) / 2
       });
       return this;
     },
@@ -65,30 +64,45 @@ var app = (function($, _, Backbone){
     initialize: function(options){
       this.config = options.config;
       this.gameDataRoot = options.gameDataRoot;
+      this.answered = new app.AnsweredCollection();
+      this.panelView = new app.QuizPanelView({answered: this.answered});
+      this.$el.append(this.panelView.render().el);
+      this.listenTo(this.answered, 'add', function(model, collection, options) {
+        console.log('answered', model);
+      });
       $.getJSON(data_url_root + '1.json').then(_.bind(function(data){
         this.questions = new app.QuestionCollection(data.objects);
         this.changeQuestion();
       }, this));
     },
     changeQuestion: function(){
-      var question = this.questions.shift();
+      this.currentQuestion = this.questions.shift();
       this.questionView && this.questionView.remove();
-      this.startQuestion(question);
+      this.startQuestion(this.currentQuestion);
     },
     startQuestion: function(question){
-      console.log(question);
-      this.questionView = new app.QuestionView({model: question, timeLimit: this.config.time_per_question });
+      this.questionView = new app.QuestionView({
+        model: question,
+        timeLimit: this.config.time_per_question
+      });
       this.listenToOnce(this.questionView, 'finish', this.finishQuestion);
       this.listenToOnce(this.questionView, 'timeout', this.questionTimeout)
       this.$el.append(this.questionView.render().el);
     },
     finishQuestion: function(answerOptions, selectedOptions, isCorrect, timeout){
+      var point = this.config.question_points[this.currentQuestion.get('type')];
+      var a = new app.Answered({
+        'question_id': this.currentQuestion.id,
+        'selected': _.pluck(selectedOptions, 'id').join(),
+        'isCorrect': isCorrect,
+        'point': point
+      });
+      this.answered.add(a);
       var showAnswer = this.config.show_answer || false;
       var timeout = timeout || false;
       var message = timeout ? '亲，回答超时，注意答题时间哦~' : (
         isCorrect ? '亲，答题正确，好厉害哦~' : '亲，答题错误。'
       );
-      console.log(answerOptions);
       if(showAnswer){
         message += "正确答案:" + _.map(answerOptions, function(model){
           return model.get('code');
@@ -111,10 +125,29 @@ var app = (function($, _, Backbone){
       }
     },
     questionTimeout: function(answer){
-      this.finishQuestion(answer, [], false, true, true);
+      this.finishQuestion(answer, [], false, true);
     },
     hasNext: function(){
       return this.questions.length > 0;
+    },
+    close: function(){
+      this.panelView.remove();
+      this.remove();
+    }
+  });
+
+  app.QuizPanelView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'quiz_panel',
+    template: _.template($('#tpl_quiz_panel').html()),
+    initialize: function(options){
+      this.answered = options.answered
+      this.listenTo(this.answered, 'update', this.render);
+    },
+    render: function(){
+      console.log(this.answered.filter({'isCorrect': true}));
+      this.$el.html(this.template({answered: this.answered}));
+      return this;
     }
   });
 
@@ -163,15 +196,12 @@ var app = (function($, _, Backbone){
       } else {
         this.selectedOptions = [ model ];
       }
-      console.log(this.selectedOptions);
     },
     submit: function(){
       var options = this.model.get('options');
       var answer = this.model.get('answer');
       var selected = _.pluck(this.selectedOptions, 'id');
       var isCorrect = this.checkAnswer(answer, selected);
-      console.log(options);
-      console.log(answer);
       this.trigger('finish',
         _(answer).map(function(id){ return options.get(id); }),
         this.selectedOptions, isCorrect);
@@ -192,7 +222,10 @@ var app = (function($, _, Backbone){
       }
     },
     checkAnswer: function(answer, selected){
-      return answer && selected && answer.length === selected.length && _.difference(answer, selected).length === 0;
+      if(answer && selected && answer.length === selected.length){
+        return _.difference(answer, selected).length === 0;
+      }
+      return false;
     },
     startTimer: function(){
       this.timer = this.timeLimit && this.createTimer(this.timeLimit) || null;
@@ -310,6 +343,11 @@ var app = (function($, _, Backbone){
     }
   });
 
+  app.RankView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'rank',
+  });
+
   app.ApplicationView = Backbone.View.extend({
     el: $('#app_container'),
     dataRoot: '/data/',
@@ -325,8 +363,6 @@ var app = (function($, _, Backbone){
       this.$el.append(this.view.render().el);
     },
     prepareQuiz: function(){
-      this.questions = new app.QuestionCollection();
-      this.answered = new app.AnsweredCollection();
       var view = new app.WelcomeView({
         content: this.quizConfig.welcome,
         infoFields: this.quizConfig.info_fields,
@@ -346,11 +382,6 @@ var app = (function($, _, Backbone){
     },
     finishQuiz: function(){
       console.log("结束");
-    },
-    renderQuestion: function(question){
-      this.currentQuestion = question;
-      var questionView = new app.QuestionView({model: question});
-      this.$el.append(questionView.render().el);
     }
   });
 

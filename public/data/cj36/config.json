@@ -12,6 +12,10 @@
     "single": 2,
     "multi": 2
   },
+  "question_points":{
+    "single": 10,
+    "multi": 20
+  },
   "info_fields": [
     ["name", "姓名"],
     ["phone", "电话"],
