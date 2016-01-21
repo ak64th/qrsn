@@ -66,7 +66,6 @@ var app = (function($, _, Backbone){
       this.gameDataRoot = options.gameDataRoot;
       this.answered = new app.AnsweredCollection();
       this.panelView = new app.QuizPanelView({answered: this.answered});
-      this.$el.append(this.panelView.render().el);
       this.listenTo(this.answered, 'add', function(model, collection, options) {
         console.log('answered', model);
       });
@@ -74,6 +73,10 @@ var app = (function($, _, Backbone){
         this.questions = new app.QuestionCollection(data.objects);
         this.changeQuestion();
       }, this));
+    },
+    render: function(){
+      this.$el.append(this.panelView.render().el);
+      return this;
     },
     changeQuestion: function(){
       this.currentQuestion = this.questions.shift();

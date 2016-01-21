@@ -50,7 +50,14 @@
 </script>
 <script type='text/template' id='tpl_quiz_panel'>
   <spam>已回答<%= answered.length %>题</samp>
-  <span>得到xx分</span>
+  <% var grade = _(answered.filter({'isCorrect': true}))
+      .chain()
+      .map('attributes')
+      .pluck('point')
+      .reduce(function(sum, point){
+        return sum + point;
+      }).value()%>
+  <span>得到<%= grade || '0' %>分</span>
 </script>
 <script type='text/template' id='tpl_welcome'>
   <%- content %>
