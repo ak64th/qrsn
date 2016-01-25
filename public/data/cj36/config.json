@@ -8,9 +8,18 @@
     "single": 15,
     "multi": 5
   },
-  "question_groups":{
-    "single": 2,
-    "multi": 2
+  "question_files":{
+    "single": [
+      "1.json",
+      "2.json",
+      "3.json",
+      "4.json",
+      "5.json"
+    ],
+    "multi": [
+      "6.json",
+      "7.json"
+    ]
   },
   "question_points":{
     "single": 10,

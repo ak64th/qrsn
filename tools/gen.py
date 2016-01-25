@@ -57,6 +57,7 @@ def generate_question(question_type, option_min, option_max):
     return q
 
 
+QUESTIONS_PER_FILE = 20
 QUESTION_TYPES = ('single', 'multi')
 
 parser = argparse.ArgumentParser(description='Generate some random questions and save into json files.')
@@ -84,11 +85,27 @@ _min, _max = args.option
 if _max < 1 or _min > _max:
     raise ValueError("option number not allowed")
 
-_data = {'objects': [], 'types': {}}
+per_file = QUESTIONS_PER_FILE
+
+
+def dump_questions(filename, questions):
+    with open(filename, 'w') as f:
+        data = {'objects': [q.to_dict() for q in questions]}
+        json.dump(data, f, indent=2, separators=(',', ': '))
+
+
+_fc = 0
+_question_files = {}
 for t, count in _count.items():
-    _data['types'].setdefault(t, [])
-    for _ in range(count):
-        q = generate_question(t, _min, _max)
-        _data['objects'].append(q.to_dict())
-        _data['types'][t].append(q.id)
-print(json.dumps(_data, indent=2, separators=(',', ': ')))
+    _question_files.setdefault(t, [])
+    while count > 0:
+        n = count if count < per_file else per_file
+        count -= n
+        _fc += 1
+        filename = "{}.json".format(_fc)
+        questions = [generate_question(t, _min, _max) for _ in range(n)]
+        dump_questions(filename, questions)
+        _question_files[t].append(filename)
+
+question_files = json.dumps(_question_files, indent=2, separators=(',', ': '))
+print(question_files)

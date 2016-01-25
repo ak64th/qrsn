@@ -59,24 +59,83 @@ var app = (function($, _, Backbone){
     model: app.Answered
   });
 
+  app.QuizBaseView = Backbone.View.extend({
+    tagName: 'div',
+    initialize: function(options){
+      this.config = options.config;
+      this.gameDataRoot = options.gameDataRoot;
+      this.questions = new app.QuestionCollection();
+      this.answered = new app.AnsweredCollection();
+      this.listenToOnce(this.questions, 'add', this.start)
+      this.listenTo(this.answered, 'add', this.answer);
+      //fetch first questions
+      this.fetchQuestions();
+    },
+    render: function(){
+      // init a panel for rendering current points and answered questions number
+      this.panelView = new app.QuizPanelView({answered: this.answered});
+      this.$el.append(this.panelView.render().el);
+      return this;
+    },
+    start: function(){
+      // start the quiz
+      this.changeQuestion();
+    },
+    answer: function(model, collection, options) {
+      console.log('answered', model);
+      //Todo: ajax to server
+    },
+    fetchQuestions: function(){
+      var url = this.getTargetUrl();
+      $.getJSON(url).done(_.bind(function(data){
+        this.questions.add(data.objects);
+        if(this.needMoreQuestions){
+          this.fetchQuestions();
+        }
+      }, this));
+    },
+    getTargetUrl: function(){
+      return this.gameDataRoot + '1.json';
+    },
+    needMoreQuestions: function(){
+      return this.questions.length < 5;
+    }
+  });
+
   app.QuizView = Backbone.View.extend({
     tagName: 'div',
     initialize: function(options){
       this.config = options.config;
       this.gameDataRoot = options.gameDataRoot;
+      this.questions = new app.QuestionCollection();
       this.answered = new app.AnsweredCollection();
-      this.panelView = new app.QuizPanelView({answered: this.answered});
-      this.listenTo(this.answered, 'add', function(model, collection, options) {
-        console.log('answered', model);
-      });
-      $.getJSON(data_url_root + '1.json').then(_.bind(function(data){
-        this.questions = new app.QuestionCollection(data.objects);
-        this.changeQuestion();
-      }, this));
+      this.listenToOnce(this.questions, 'add', this.start)
+      this.listenTo(this.answered, 'add', this.answer);
+      //fetch first questions
+      this.fetchQuestion();
     },
     render: function(){
+      // init a panel for rendering current points and answered questions number
+      this.panelView = new app.QuizPanelView({answered: this.answered});
       this.$el.append(this.panelView.render().el);
       return this;
+    },
+    start: function(){
+      // start the quiz
+      this.changeQuestion();
+    },
+    answer: function(model, collection, options) {
+      console.log('answered', model);
+      //Todo: ajax to server
+    },
+    fetchQuestion: function(){
+      // fetch question
+      $.getJSON(data_url_root + '1.json').then(_.bind(function(data){
+        this.questions.add(data.objects);
+        if(this.needMoreQuestions){
+          this.fetchQuestion();
+        }
+      }, this));
     },
     changeQuestion: function(){
       this.currentQuestion = this.questions.shift();
@@ -134,7 +193,7 @@ var app = (function($, _, Backbone){
       return this.questions.length > 0;
     },
     close: function(){
-      this.panelView.remove();
+      this.panelView && this.panelView.remove();
       this.remove();
     }
   });
