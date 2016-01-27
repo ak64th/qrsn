@@ -25,13 +25,12 @@
       this.loadView(view);
     },
     startQuiz: function(args){
-      console.log(_.object(args));
+      // console.log(_.object(args));
       //Todo: send args to server
 
       var ViewClass, quizType = this.quizConfig['type'];
       switch (quizType) {
         case app.QUIZ_TYPE.ORDINARY:
-          console.log(app.QUIZ_TYPE.ORDINARY);
           ViewClass = app.OrdinaryQuizView;
           break;
         case app.QUIZ_TYPE.TIME_LIMIT:

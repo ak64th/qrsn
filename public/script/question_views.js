@@ -25,7 +25,7 @@
       data.timeLimit = this.timeLimit;
       this.$el.html(this.template(data));
       this.renderAllOptions();
-      this.startTimer();
+      // this.startTimer();
       return this;
     },
     renderOption: function(model){
@@ -52,36 +52,37 @@
     },
     onSubmit: function(){
       if (!_.isEmpty(this.selectedOptions)){
-        this.timer && clearInterval(this.timer);
-        this.timer = null;
-        var answered = this.createAnswered();
-        this.trigger('answered', answered);
+        this.clearTimer();
+        this.finish();
       }
     },
     onTimeout: function(){
-      this.timer && clearInterval(this.timer);
-      this.timer = null;
-      var answered = this.createAnswered();
-      answered.set('timeout', true);
-      this.trigger('answered', answered);
+      this.clearTimer();
+      this.model.set('timeout', true);
+      this.finish();
     },
-    createAnswered: function(){
-      var answered = new app.Answered(this.model.toJSON());
-      answered.set('selected', this.selectedOptions || []);
+    finish: function(){
+      this.model.set('answered', true);
+      this.model.set('selected', this.selectedOptions || []);
+      this.trigger('finish', this.model);
     },
     startTimer: function(){
       if (!this.timeLimit || this.timeLimit < 1) return null;
       var counter = 0, timeLimit = this.timeLimit;
-      var timer = setInterval(_.bind(function(){
-        counter++;
+      var callback = function(){
+        remaining = timeLimit - ++counter;
         console.log("counter #", counter, timeLimit);
-        if (counter >= timeLimit) this.onTimeout();
-        this.$('.timer').html( timeLimit - counter );
-      }, this), 1000);
-      return timer;
+        this.$('.timer').html( remaining );
+        if (remaining < 1) this.onTimeout();
+      };
+      this.timer = setInterval(_.bind(callback, this), 1000);
+    },
+    clearTimer: function(){
+      this.timer && clearInterval(this.timer);
+      this.timer = null;
     },
     close: function(){
-      this.timer && clearInterval(this.timer);
+      this.clearTimer();
       _.each(this.optionViews, function(view){ view.remove(); });
       this.remove();
     }

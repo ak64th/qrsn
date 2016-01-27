@@ -3,16 +3,16 @@
 
   app.Option = Backbone.Model.extend({});
 
-  app.Question = Backbone.Model.extend({});
-
-  app.Answered = app.Question.extend({
+  app.Question = Backbone.Model.extend({
     defaults: {
       "selected": [],
-      "timeout":  false
+      "timeout":  false,
+      "answered": false
     },
     isCorrect: function(){
-      var answer = this.answer;
-      var selected = this.selected;
+      if (!this.get('answered')) return false;
+      var answer = this.get('answer');
+      var selected = _(this.get('selected')).pluck('id');
       if(answer && selected && answer.length === selected.length){
         return _.difference(answer, selected).length === 0;
       }
@@ -22,10 +22,8 @@
 
   app.OptionCollection = Backbone.Collection.extend({model: app.Option});
 
-  app.QuestionCollection = Backbone.Collection.extend({model: app.Question});
-
-  app.AnsweredCollection = Backbone.Collection.extend({
-    model: app.Answered
+  app.QuestionCollection = Backbone.Collection.extend({
+    model: app.Question,
     totalPoints: function(){
       var total = _(this.models).chain()
       .filter(function(model){
@@ -34,7 +32,7 @@
       .pluck('point')
       .reduce(function(sum, point){
         return sum + point;
-      }).value;
+      }).value();
       return total;
     }
   });
