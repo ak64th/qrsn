@@ -89,16 +89,20 @@
         console.log("need no more questions, have loaded", loadedCount);
         return this.questions;
       }
-      var neededCount = this.config.count[neededType] - (loadedCount[neededType] || 0);
-      var file = this.unloadedFiles[neededType].pop();
-      var defered = $.ajax({
-        dataType: "json",
-        url: this.gameDataRoot + file,
-        timeout: app.DOWNLOAD_TIMEOUT
-      }).done(_.bind(function(data){
-        var toAdd = _.sample(data.objects, neededCount);
-        this.questions.add(toAdd);
-      }, this));
+      // download files only when internet is accessable
+      if (navigator.onLine) {
+        var neededCount = this.config.count[neededType] - (loadedCount[neededType] || 0);
+        var file = this.unloadedFiles[neededType].pop();
+        $.ajax({
+          dataType: "json",
+          url: this.gameDataRoot + file,
+          timeout: app.DOWNLOAD_TIMEOUT
+        }).done(_.bind(function(data){
+          var toAdd = _.sample(data.objects, neededCount);
+          this.questions.add(toAdd);
+        }, this));
+      }
+      // download more
       this.download();
     }, app.DOWNLOAD_TIMEOUT + 300),
     hasNext: function(){
