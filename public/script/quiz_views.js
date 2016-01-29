@@ -24,7 +24,8 @@
     play: function(){
       console.log('play method called');
       this.currentQuestion = _.sample(this.questions.filter({'answered': false}));
-      this.preQuestion && this.preQuestion(this.currentQuestion);
+      this.preQuestion && this.preQuestion();
+      this.questionView && this.questionView.remove();
       this.questionView = new app.QuestionView({
         model: this.currentQuestion,
         timeLimit: this.config.time_per_question
@@ -33,36 +34,32 @@
       this.$el.append(this.questionView.render().el);
     },
     finishQuestion: function(){
-      this.currentQuestion.set('answered', true);
-      console.log('finishQuestion method called', this.currentQuestion.toJSON(), this.currentQuestion.isCorrect());
       //Todo: ajax to server
-      // this.postQuestion && this.postQuestion(answered);
-      // this.answered.add(answered);
-      // var showAnswer = this.config.show_answer || false;
-      // var timeout = answered.timeout || false;
-      // var message = timeout ? '亲，回答超时，注意答题时间哦~' : (
-      //   answered.isCorrect ? '亲，答题正确，好厉害哦~' : '亲，答题错误。'
-      // );
-      // if(showAnswer){
-      //   message += "正确答案:" + _.map(answerOptions, function(model){
-      //     return model.get('code');
-      //   }).join() + '。';
-      // }
-      // if(this.hasNext()){
-      //   app.modal({
-      //     message: message,
-      //     button: { text: "下一题" },
-      //     callback: _.bind(this.changeQuestion, this)
-      //   });
-      // } else {
-      //   app.modal({
-      //     message: message + "游戏结束",
-      //     button: { text: "查看结果" },
-      //     callback: _.bind(function(){
-      //       this.trigger('finishQuiz');
-      //     }, this)
-      //   });
-      // }
+      var current = this.currentQuestion;
+      current.set('answered', true);
+      var showAnswer = (this.config.show_answer || false),
+          timeout = current.get('timeout'),
+          message = timeout ? '亲，回答超时，注意答题时间哦~' : (
+            current.isCorrect() ? '亲，答题正确，好厉害哦~' : '亲，答题错误。'
+          );
+      console.log('finishQuestion method called', current.toJSON(), current.isCorrect());
+      this.postQuestion && this.postQuestion();
+      showAnswer && (message += "正确答案:" + current.getAnswerCodes().join() + '。');
+      if(this.hasNext()){
+        app.modal({
+          message: message,
+          button: { text: "下一题" },
+          callback: _.bind(this.play, this)
+        });
+      } else {
+        app.modal({
+          message: message + "游戏结束",
+          button: { text: "查看结果" },
+          callback: _.bind(function(){
+            this.trigger('finishQuiz');
+          }, this)
+        });
+      }
     },
     hasNext: function(){
       throw new Error('Not implemented');

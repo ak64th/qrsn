@@ -17,6 +17,13 @@
         return _.difference(answer, selected).length === 0;
       }
       return false;
+    },
+    getAnswerCodes: function(){
+      var answer = this.get('answer'),
+          options = this.get('options');
+      return _.map(answer, function(id){
+        return options.get(id).get('code');
+      });
     }
   });
 
