@@ -11,7 +11,10 @@
     },
     render: function(){
       // init a panel for rendering current points and answered questions number
-      this.panelView = new app.QuizPanelView({collection: this.questions});
+      this.panelView = new app.QuizPanelView({
+        collection: this.questions,
+        config: this.config
+      });
       this.$el.append(this.panelView.render().el);
       // Once get a question start the quiz
       this.listenToOnce(this.questions, 'add', this.play);
@@ -32,6 +35,7 @@
       });
       this.listenToOnce(this.questionView, 'finish', this.finishQuestion);
       this.$el.append(this.questionView.render().el);
+      console.log(this.currentQuestion.getAnswerCodes().join());
     },
     finishQuestion: function(){
       //Todo: ajax to server
@@ -116,11 +120,19 @@
     className: 'quiz_panel',
     template: _.template($('#tpl_quiz_panel').html()),
     initialize: function(options){
+      this.config = options.config;
       this.listenTo(this.collection, 'change:answered', this.render);
     },
     render: function(){
-      var count = this.collection.filter({'answered': true}).length;
-      var points = this.collection.totalPoints() || 0;
+      var count = this.collection.filter({'answered': true}).length,
+          question_points = this.config.question_points,
+          points = 0;
+      this.collection.each(function(model){
+        if(model.isCorrect()){
+          console.log('quiz panel calculating total points',question_points, points, model.get('type'));
+        }
+        // model.isCorrect() && (points += question_points[model.get('type')]);
+      });
       this.$el.html(this.template({count: count, points: points}));
       return this;
     }
