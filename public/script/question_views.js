@@ -43,15 +43,15 @@
       _.each(questionOptions, this.renderOption, this);
       return this;
     },
-    toggleChecked: function(model){
+    toggleChecked: function(checked){
       if(this.model.get('type') == app.QUESTION_TYPE.MULTI){
-        this.selectedOptions = this.model.get('options').filter('checked');
+        this.model.set('selected', this.model.get('options').filter('checked'))
       } else {
-        this.selectedOptions = [ model ];
+        this.model.set('selected', [ checked ])
       }
     },
     onSubmit: function(){
-      if (!_.isEmpty(this.selectedOptions)){
+      if (!_.isEmpty(this.model.get('selected'))){
         this.clearTimer();
         this.finish();
       }
@@ -63,7 +63,6 @@
     },
     finish: function(){
       this.model.set('answered', true);
-      this.model.set('selected', this.selectedOptions || []);
       this.trigger('finish', this.model);
     },
     startTimer: function(){
@@ -71,7 +70,7 @@
       var counter = 0, timeLimit = this.timeLimit;
       var callback = function(){
         remaining = timeLimit - ++counter;
-        console.log("counter #", counter, timeLimit);
+        // console.log("counter #", counter, timeLimit);
         this.$('.timer').html( remaining );
         if (remaining < 1) this.onTimeout();
       };

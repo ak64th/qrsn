@@ -30,7 +30,16 @@
   app.OptionCollection = Backbone.Collection.extend({model: app.Option});
 
   app.QuestionCollection = Backbone.Collection.extend({
-    model: app.Question
+    model: app.Question,
+    totalPoints: function(questionPoints){
+      var totalPoints = 0;
+      this.each(function(model){
+        if (model.get('answered') && model.isCorrect()){
+          totalPoints += questionPoints[model.get('type')];
+        }
+      }, this);
+      return totalPoints;
+    }
   });
 
   root.app = app;

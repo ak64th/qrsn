@@ -25,7 +25,6 @@
       throw new Error('Not implemented');
     },
     play: function(){
-      console.log('play method called');
       this.currentQuestion = _.sample(this.questions.filter({'answered': false}));
       this.preQuestion && this.preQuestion();
       this.questionView && this.questionView.remove();
@@ -40,13 +39,11 @@
     finishQuestion: function(){
       //Todo: ajax to server
       var current = this.currentQuestion;
-      current.set('answered', true);
       var showAnswer = (this.config.show_answer || false),
           timeout = current.get('timeout'),
           message = timeout ? '亲，回答超时，注意答题时间哦~' : (
             current.isCorrect() ? '亲，答题正确，好厉害哦~' : '亲，答题错误。'
           );
-      console.log('finishQuestion method called', current.toJSON(), current.isCorrect());
       this.postQuestion && this.postQuestion();
       showAnswer && (message += "正确答案:" + current.getAnswerCodes().join() + '。');
       if(this.hasNext()){
@@ -79,17 +76,13 @@
           return _.shuffle(val);
         })
       }
-      console.log('Unloaded files',this.unloadedFiles);
       var loadedCount = this.questions.countBy('type');
       var neededType = _.findKey(this.config.count, function(count, type){
         var loaded = loadedCount[type] || 0;
-        console.log('type:' + type +' loaded:'+loaded+' need:'+count);
+        // console.log('type:' + type +' loaded:'+loaded+' need:'+count);
         return loaded < count;
       });
-      if (!neededType){
-        console.log("need no more questions, have loaded", loadedCount);
-        return this.questions;
-      }
+      if (!neededType) return this.questions;
       // download files only when internet is accessable
       if (navigator.onLine) {
         var neededCount = this.config.count[neededType] - (loadedCount[neededType] || 0);
@@ -107,7 +100,6 @@
       this.download();
     }, app.DOWNLOAD_TIMEOUT + 300),
     hasNext: function(){
-      console.log(' hasNext', this.questions);
       return this.questions.any({'answered': false});
     }
   });
@@ -125,17 +117,11 @@
     },
     render: function(){
       var count = this.collection.filter({'answered': true}).length,
-          question_points = this.config.question_points,
-          points = 0;
-      this.collection.each(function(model){
-        if(model.isCorrect()){
-          console.log('quiz panel calculating total points',question_points, points, model.get('type'));
-        }
-        // model.isCorrect() && (points += question_points[model.get('type')]);
-      });
+          questionPoints = this.config.question_points;
+      var points = this.collection.totalPoints(questionPoints);
       this.$el.html(this.template({count: count, points: points}));
       return this;
-    }
+    },
   });
 
   root.app = app;
