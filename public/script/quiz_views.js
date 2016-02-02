@@ -17,12 +17,21 @@
       });
       this.$el.append(this.panelView.render().el);
       // Once get a question start the quiz
-      this.listenToOnce(this.questions, 'add', this.play);
+      this.listenToOnce(this.questions, 'add', this.start);
       this.download();
       return this;
     },
+    close: function(){
+      this.questionView && this.questionView.close();
+      this.panelView.remove();
+      this.remove();
+    },
     download: function(){
       throw new Error('Not implemented');
+    },
+    start: function(){
+      this.preQuiz && this.preQuiz();
+      this.play();
     },
     play: function(){
       this.currentQuestion = _.sample(this.questions.filter({'answered': false}));
@@ -38,13 +47,13 @@
     },
     finishQuestion: function(){
       //Todo: ajax to server
+      this.postQuestion && this.postQuestion();
       var current = this.currentQuestion;
       var showAnswer = (this.config.show_answer || false),
           timeout = current.get('timeout'),
           message = timeout ? '亲，回答超时，注意答题时间哦~' : (
             current.isCorrect() ? '亲，答题正确，好厉害哦~' : '亲，答题错误。'
           );
-      this.postQuestion && this.postQuestion();
       showAnswer && (message += "正确答案:" + current.getAnswerCodes().join() + '。');
       if(this.hasNext()){
         app.modal({
@@ -98,14 +107,53 @@
       }
       // download more
       this.download();
-    }, app.DOWNLOAD_TIMEOUT + 300),
+    }, app.DOWNLOAD_TIMEOUT),
     hasNext: function(){
       return this.questions.any({'answered': false});
     }
   });
 
-  app.TimeLimitQuizView = app.QuizBaseView.extend({});
-  app.ChallengeQuizView = app.QuizBaseView.extend({});
+  // for those modes which need to download questions continuously
+  app.ContinuousQuizView = app.QuizBaseView.extend({
+    download: _.throttle(function(){
+      if(_.isEmpty(this.unloadedFiles)){
+        var files = _.clone(this.config.question_files);
+        this.unloadedFiles = _(files).chain().values().flatten().shuffle().value();
+      }
+      if (navigator.onLine) {
+        var file = this.unloadedFiles.pop();
+        $.ajax({
+          dataType: "json",
+          url: this.gameDataRoot + file,
+          timeout: app.DOWNLOAD_TIMEOUT
+        }).done(_.bind(function(data){
+          this.questions.add(data.objects);
+        }, this));
+      }
+    }, app.DOWNLOAD_TIMEOUT),
+    postQuestion: function(){
+      var unanswered = this.questions.filter({'answered': false});
+      if(unanswered.length < app.DOWNLOAD_TRIGGER) this.download();
+    },
+  });
+
+  app.TimeLimitQuizView = app.ContinuousQuizView.extend({
+    preQuiz: function(){
+      this.startTime = new Date();
+    },
+    hasNext: function(){
+      var limit = this.config.time_per_quiz;
+          current = new Date();
+      console.log('time limit', limit, (current - this.startTime)/1000);
+      return current - this.startTime < limit * 1000;
+    }
+  });
+
+  app.ChallengeQuizView = app.ContinuousQuizView.extend({
+    hasNext: function(){
+      return this.currentQuestion.isCorrect();
+    }
+  });
 
   app.QuizPanelView = Backbone.View.extend({
     tagName: 'div',

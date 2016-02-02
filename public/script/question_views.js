@@ -25,7 +25,7 @@
       data.timeLimit = this.timeLimit;
       this.$el.html(this.template(data));
       this.renderAllOptions();
-      // this.startTimer();
+      this.startTimer();
       return this;
     },
     renderOption: function(model){
