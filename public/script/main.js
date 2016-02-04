@@ -36,7 +36,7 @@
         case app.QUIZ_TYPE.TIME_LIMIT:
           ViewClass = app.TimeLimitQuizView;
           break;
-        case app.QUIZ_TYPE.ORDINARY:
+        case app.QUIZ_TYPE.CHALLENGE:
           ViewClass = app.ChallengeQuizView;
           break;
         default: throw new Error('Unknown Quiz Type');
