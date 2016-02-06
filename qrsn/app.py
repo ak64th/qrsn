@@ -2,7 +2,7 @@ import falcon
 import uuid
 import redis
 import simplejson as json
-from db import Answered
+from models import Answered
 
 
 safe_int = lambda i: int(i) if i else i
