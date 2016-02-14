@@ -34,7 +34,7 @@
 </script>
 <script type="text/template" id="tpl_question">
   <% if(timeLimit){ %>
-  剩余<spam class="timer"><%- timeLimit %></spam>秒
+  剩余<span class="timer"><%- timeLimit %></span>秒
   <% } %>
   <div class="content"><%= content %></div>
   <div class="option_list"></div>
@@ -42,14 +42,14 @@
 </script>
 <script type="text/template" id="tpl_option_single">
   <input type='radio' id='option_<%= id %>' name='question_option'>
-  <label for='option_<%= id %>'><spam><%= code %></spam> <%= content %></label>
+  <label for='option_<%= id %>'><span><%= code %></span> <%= content %></label>
 </script>
 <script type="text/template" id="tpl_option_multi">
   <input type='checkbox' id='option-<%= id %>' name='question_option'>
-  <label for='option-<%= id %>'><spam><%= code %></spam> <%= content %></label>
+  <label for='option-<%= id %>'><span><%= code %></span> <%= content %></label>
 </script>
 <script type='text/template' id='tpl_quiz_panel'>
-  <spam>已回答<%= count %>题</samp>
+  <span>已回答<%= count %>题</span>
   <span>得到<%= points %>分</span>
 </script>
 <script type='text/template' id='tpl_welcome'>
