@@ -37,10 +37,13 @@
   <span>得到<%= points %>分</span>
 </script>
 <script type='text/template' id='tpl_welcome'>
+  <img class='intro_img' src="image/introduction.png">
+  <section class='intro'>
   <%= content %>
+  </section>
   <% if (!_.isEmpty(infoFields) ){ %>
   <section class="info">
-  <p>请完整填写以下资料：</p>
+  <h3>请完整填写以下资料：</h3>
   <% _.each(infoFields, function(field){
     var field_key = field[0];
     var field_text = field[1];
@@ -49,7 +52,7 @@
   <% }) %>
   </section>
   <% } %>
-<input type="submit" class="submit" value="开始游戏">
+  <input type="submit" class="submit" value="开始游戏">
 </script>
 <script type="text/template" id="tpl_too_early">
   <section class="reject">
