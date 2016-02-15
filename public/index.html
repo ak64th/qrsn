@@ -4,23 +4,7 @@
 <head lang="en">
   <meta charset="UTF-8">
   <title>一战到底</title>
-  <style>
-    .overlay {
-      position:fixed;
-      top: 0;
-      background-color: #000;
-      opacity: 0.8;
-      width: 100%;
-      height: 100%;
-    }
-    .dialogue {
-      position: absolute;
-      padding: 1rem 0;
-      background-color:#FFFFFF ;
-      border-radius: 0 0 0.3rem 0.3rem ;
-      text-align: center;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="style/main.css"/>
 </head>
 <body>
 <div id="app_container">
@@ -69,20 +53,23 @@
 </script>
 <script type="text/template" id="tpl_too_early">
   <section class="reject">
-    亲，本次活动未开始，<br />
-    活动很精彩，敬请期待哦~~
+    亲，本次活动未开始，<br/>
+    活动很精彩，敬请期待哦~~<br/>
+    <img src="image/reject_laugh.png">
   </section>
 </script>
 <script type="text/template" id="tpl_too_late">
   <section class="reject">
-    亲，本次活动已结束，<br />
-    下次要记得赶早哦~~~
+    亲，本次活动已结束，<br/>
+    下次要记得赶早哦~~~<br/>
+    <img src="image/reject_cry.png">
   </section>
 </script>
 <script type="text/template" id="tpl_no_more_chance">
   <section class="reject">
-    亲，您的答题次数已经用完，<br />
-    下次活动再努力哦~~~
+    亲，您的答题次数已经用完，<br/>
+    下次活动再努力哦~~~<br/>
+    <img src="image/reject_cry.png">
   </section>
 </script>
 <script type="text/template" id="tpl_rank">
