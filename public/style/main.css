@@ -1,10 +1,14 @@
+*{margin:0;padding:0;list-style-type:none;}
+img{border:0;}
+a{text-decoration: none;}
+
 html {
+  font-size: 20px;font-size: 6vw;
   background: url('../image/bg.jpg') no-repeat center center fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
-  background-size: cover;
-  font-size: 25px;
+  background-size: 100% 100%;
 }
 .reject {
   text-align: center;
@@ -14,6 +18,16 @@ html {
 .reject > img {
   width: 7rem;
   margin-top: 1.25rem;
+}
+.welcome {
+  width: 12.5rem;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
+  margin: 1rem auto 0px;
+  background-color: #FFF5C2;
+  opacity: 0.8;
+  border-radius: 0.3rem;
+  font-size: 0.75rem;
 }
 
 .overlay {
