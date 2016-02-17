@@ -62,12 +62,11 @@
 </script>
 <script type="text/template" id="tpl_option_single">
   <input type='radio' id='option_<%= id %>' name='question_option'>
-  <label for='option_<%= id %>'> <%= code %>.<%= content %> </label>
+  <label for='option_<%= id %>'><%= code %>.<%= content %></label>
 </script>
 <script type="text/template" id="tpl_option_multi">
   <input type='checkbox' id='option-<%= id %>' name='question_option'>
-  <label for='option-<%= id %>'></label>
-  <span><%= code %></span> <%= content %>
+  <label for='option-<%= id %>'><%= code %>.<%= content %></label>
 </script>
 <script type="text/template" id="tpl_rank">
   <section>
