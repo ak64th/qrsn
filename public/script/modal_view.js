@@ -3,7 +3,7 @@
 
   app.ModalView = Backbone.View.extend({
     tagName: 'div',
-    className: 'modal_container',
+    className: 'modal',
     template: _.template($('#tpl_modal').html()),
     events: {
       'click .submit': 'close'
@@ -14,9 +14,11 @@
     },
     render: function(){
       this.$el.html(this.template(this.options));
-      this.$('.dialogue').css({
-        'top': ($(window).height() - this.$el.height()) / 2
-      });
+      var $ele = this.$el;
+      // this.$('.dialogue').css({
+      //   'top': ($(window).height() - this.$el.height()) / 2,
+      //   'left': ($(window).width() - this.$el.width()) / 2
+      // });
       return this;
     },
     close: function(){

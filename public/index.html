@@ -46,7 +46,7 @@
   <% }) %>
   </section>
   <% } %>
-  <input type="submit" class="submit" value="开始游戏">
+  <input type="submit" class="submit button" value="开始游戏">
 </script>
 <script type='text/template' id='tpl_quiz_panel'>
   <span>已回答<%= count %>题</span>
@@ -58,15 +58,16 @@
   <% } %>
   <div class="content"><%= content %></div>
   <div class="option_list"></div>
-  <input type="submit" class="submit">
+  <input type="submit" class="submit button">
 </script>
 <script type="text/template" id="tpl_option_single">
   <input type='radio' id='option_<%= id %>' name='question_option'>
-  <label for='option_<%= id %>'><span><%= code %></span> <%= content %></label>
+  <label for='option_<%= id %>'> <%= code %>.<%= content %> </label>
 </script>
 <script type="text/template" id="tpl_option_multi">
   <input type='checkbox' id='option-<%= id %>' name='question_option'>
-  <label for='option-<%= id %>'><span><%= code %></span> <%= content %></label>
+  <label for='option-<%= id %>'></label>
+  <span><%= code %></span> <%= content %>
 </script>
 <script type="text/template" id="tpl_rank">
   <section>
@@ -76,9 +77,10 @@
 </script>
 <script type="text/template" id="tpl_modal">
   <div class="overlay"></div>
+  <div class="bar"></div>
   <div class="dialogue">
-    <%- message %>
-    <button class="submit <%= button.class %>"><%= button.text %></button>
+    <%= message %>
+    <button class="submit button <%= button.class %>"><%= button.text %></button>
   </div>
 </script>
 <script type="text/javascript" src="/script/packed.js"></script>
@@ -88,27 +90,31 @@ var game_code = window.location.hash.slice(1);
 var data_url_root = '/data/' + game_code + '/';
 $.getJSON(data_url_root + 'config.json').then(function(data){
   application = new app.ApplicationView({game_code: game_code, config: data});
-  // application.startQuiz();
-  var errorView = null;
-  var used_chances = parseInt(localStorage.getItem(game_code + '_count'));
-  if (used_chances > parseInt(data.max_chances)){
-    errorView = new app.RejectionNoMoreChanceView();
-  } else {
-    var now = new Date();
-    var start_at = new Date(data.start_at);
-    var end_at = new Date(data.end_at);
-    if(now < start_at){
-      errorView = new app.RejectionTooEarlyView();
-    } else if (now > end_at){
-      errorView = new app.RejectionTooLateView();
-    }
-  };
-  if(errorView){
-    application.loadView(errorView);
-  } else {
-    localStorage.setItem(game_code + '_count', used_chances + 1);
-    application.prepareQuiz();
-  }
+  // app.modal({
+  //   message: "亲，回答错误，正确答案是<br/>多选是AB/单选是A",
+  //   button: { text: "关闭" }
+  // });
+  application.startQuiz();
+  // var errorView = null;
+  // var used_chances = parseInt(localStorage.getItem(game_code + '_count'));
+  // if (used_chances > parseInt(data.max_chances)){
+  //   errorView = new app.RejectionNoMoreChanceView();
+  // } else {
+  //   var now = new Date();
+  //   var start_at = new Date(data.start_at);
+  //   var end_at = new Date(data.end_at);
+  //   if(now < start_at){
+  //     errorView = new app.RejectionTooEarlyView();
+  //   } else if (now > end_at){
+  //     errorView = new app.RejectionTooLateView();
+  //   }
+  // };
+  // if(errorView){
+  //   application.loadView(errorView);
+  // } else {
+  //   localStorage.setItem(game_code + '_count', used_chances + 1);
+  //   application.prepareQuiz();
+  // }
 });
 </script>
 </body>

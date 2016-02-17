@@ -8,6 +8,15 @@ h1, h2, h3, h4, h5, h6{ font-weight: normal; }
 img { border: 0; max-width: 100%; }
 a{text-decoration: none;}
 
+/* General Component */
+.button {
+  background-color: transparent;
+  background-image: -webkit-linear-gradient(#FFCA00, #FD5F00);
+  background-image: linear-gradient(#FFCA00, #FD5F00);
+  background-size: 100% 100%;
+  display: block;
+}
+
 html {
   font-size: 20px;font-size: 6vw;
   background: url('../image/bg.jpg') no-repeat center center fixed;
@@ -32,7 +41,7 @@ html {
 .reject .emotion_laugh{
   background-image: url("../image/reject_laugh.png");
 }
-.welcome {
+.welcome, .question {
   width: 12.5rem;
   padding: 0.5rem 1rem;
   box-sizing: border-box;
@@ -76,17 +85,62 @@ html {
   height: 2rem;
   line-height: 2rem;
   text-align: center;
-  background-color: transparent;
-  background-image: -webkit-linear-gradient(#FFCA00, #FD5F00);
-  background-image: linear-gradient(#FFCA00, #FD5F00);
-  background-size: 100% 100%;
-  border-radius: 0.5rem;
   font-size: 1rem;
   color: #FFF;
   margin: 0.5rem auto;
-  display: block;
+  border-radius: 0.5rem;
 }
-.overlay {
+.question .content {
+  font-weight: bold;
+}
+.question .question_option {
+  margin: 0.3rem 0;
+}
+.question .question_option input[type='radio'],
+.question .question_option input[type='checkbox']:empty {
+  visibility: hidden;
+}
+.question .question_option input[type='radio'] + label,
+.question .question_option input[type='checkbox'] + label {
+  position: relative;
+  float: left;
+  cursor: pointer;
+  text-indent: 0.6rem;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.question .question_option input[type='radio'] + label:before,
+.question .question_option input[type='checkbox'] + label:before {
+	position: absolute;
+  display: block;
+  top: 0.25rem;
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  background: #333 none repeat scroll 0% 0%;
+  box-shadow:inset 0px 1px 3px rgba(0, 0, 0, 0.5);
+}
+.question .question_option input[type='radio'] + label:before{
+  border-radius: 100%;
+}
+.question .question_option input[type='radio']:checked + label:before,
+.question .question_option input[type='checkbox']:checked + label:before {
+  background: #3C3 repeat;
+}
+.question .submit {
+  width: 4.75rem;
+  height: 1.375rem;
+  line-height: 1.375rem;
+  text-align: center;
+  font-size: 0.7rem;
+  color: #FFF;
+  margin: 0.5rem auto;
+  border-radius: 0.3rem;
+}
+.modal .overlay {
+  content: '';
   position:fixed;
   top: 0;
   background-color: #000;
@@ -94,10 +148,28 @@ html {
   width: 100%;
   height: 100%;
 }
-.dialogue {
-  position: absolute;
-  padding: 1rem 0;
-  background-color:#FFFFFF ;
-  border-radius: 0 0 0.3rem 0.3rem ;
+.modal .dialogue {
+  padding: 2rem 0.5rem 0.5rem;
+  background-color: transparent;
+  background-image: -webkit-linear-gradient(#FFDF57 1.5rem, #FFF 1.5rem);
+  background-image: linear-gradient(#FFDF57 1.5rem, #FFF 1.5rem);
+  border-radius: 0.3rem;
   text-align: center;
+  font-size: 0.7rem;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+}
+.modal .dialogue .submit {
+  line-height: 1.125rem;
+  height: 1.125rem;
+  width: 3.625rem;
+  text-align: center;
+  font-size: 0.7rem;
+  color: #FFF;
+  margin: 0.5rem auto 0;
+  border-radius: 0.3rem;
 }
