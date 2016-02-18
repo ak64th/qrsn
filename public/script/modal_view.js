@@ -14,11 +14,6 @@
     },
     render: function(){
       this.$el.html(this.template(this.options));
-      var $ele = this.$el;
-      // this.$('.dialogue').css({
-      //   'top': ($(window).height() - this.$el.height()) / 2,
-      //   'left': ($(window).width() - this.$el.width()) / 2
-      // });
       return this;
     },
     close: function(){

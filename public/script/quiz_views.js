@@ -53,18 +53,23 @@
           timeout = current.get('timeout'),
           message = timeout ? '亲，回答超时，注意答题时间哦~' : (
             current.isCorrect() ? '亲，答题正确，好厉害哦~' : '亲，答题错误。'
+          )
+          emotion = timeout ? 'sweat' : (
+            current.isCorrect() ? 'tongue' : 'tears'
           );
       showAnswer && (message += "正确答案:" + current.getAnswerCodes().join() + '。');
       if(this.hasNext()){
         app.modal({
           message: message,
           button: { text: "下一题" },
+          emotion: emotion,
           callback: _.bind(this.play, this)
         });
       } else {
         app.modal({
           message: message + "游戏结束",
           button: { text: "查看结果" },
+          emotion: emotion,
           callback: _.bind(function(){
             this.trigger('finishQuiz');
           }, this)

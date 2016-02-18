@@ -163,6 +163,23 @@ html {
   -ms-transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
 }
+.modal .emotion {
+  height: 2.5rem;
+  top: -1.25rem;
+  position: absolute;
+  width: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.modal .emotion_sweat {
+  background-image: url("../image/emotion_sweat.png");
+}
+.modal .emotion_tongue {
+  background-image: url("../image/emotion_tongue.png");
+}
+.modal .emotion_tears {
+  background-image: url("../image/emotion_tears.png");
+}
 .modal .dialogue .submit {
   line-height: 1.125rem;
   height: 1.125rem;

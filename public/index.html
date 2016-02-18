@@ -76,8 +76,8 @@
 </script>
 <script type="text/template" id="tpl_modal">
   <div class="overlay"></div>
-  <div class="bar"></div>
   <div class="dialogue">
+    <i class="emotion <% if (typeof emotion !== 'undefined'){ print('emotion_' + emotion); } %>"/>
     <%= message %>
     <button class="submit button <%= button.class %>"><%= button.text %></button>
   </div>
@@ -91,6 +91,7 @@ $.getJSON(data_url_root + 'config.json').then(function(data){
   application = new app.ApplicationView({game_code: game_code, config: data});
   // app.modal({
   //   message: "亲，回答错误，正确答案是<br/>多选是AB/单选是A",
+  //   emotion: "tears",
   //   button: { text: "关闭" }
   // });
   application.startQuiz();
