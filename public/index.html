@@ -89,12 +89,8 @@ var game_code = window.location.hash.slice(1);
 var data_url_root = '/data/' + game_code + '/';
 $.getJSON(data_url_root + 'config.json').then(function(data){
   application = new app.ApplicationView({game_code: game_code, config: data});
-  // app.modal({
-  //   message: "亲，回答错误，正确答案是<br/>多选是AB/单选是A",
-  //   emotion: "tears",
-  //   button: { text: "关闭" }
-  // });
-  application.startQuiz();
+  application.run();
+  // application.startQuiz();
   // var errorView = null;
   // var used_chances = parseInt(localStorage.getItem(game_code + '_count'));
   // if (used_chances > parseInt(data.max_chances)){

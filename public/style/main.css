@@ -180,6 +180,9 @@ html {
 .modal .emotion_tears {
   background-image: url("../image/emotion_tears.png");
 }
+.modal .emotion_tricky {
+  background-image: url("../image/emotion_tricky.png");
+}
 .modal .dialogue .submit {
   line-height: 1.125rem;
   height: 1.125rem;

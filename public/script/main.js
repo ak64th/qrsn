@@ -10,6 +10,29 @@
       this.gameDataRoot = this.dataRoot + this.game_code + '/';
       this.quizConfig = options.config;
     },
+    run: function(){
+      var errorView;
+      var used = parseInt(localStorage.getItem(this.game_code + '_count')),
+          max =  parseInt(this.quizConfig.max_chances);
+      if (used > max){
+        errorView = new app.RejectionNoMoreChanceView();
+      } else {
+        var now = new Date(),
+            start_at = new Date(this.quizConfig.start_at),
+            end_at = new Date(this.quizConfig.end_at);
+        if(now < start_at){
+          errorView = new app.RejectionTooEarlyView();
+        } else if (now > end_at){
+          errorView = new app.RejectionTooLateView();
+        }
+      };
+      if(errorView){
+        this.loadView(errorView);
+      } else {
+        localStorage.setItem(this.game_code + '_count', used + 1);
+        application.prepareQuiz();
+      }
+    },
     loadView: function(view){
       this.view && (this.view.close ? this.view.close() : this.view.remove());
       this.view = view;

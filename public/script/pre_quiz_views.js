@@ -63,6 +63,7 @@
       } else {
         app.modal({
           message: "亲，需填完信息才能开始哦~",
+          emotion: "tricky",
           button: { text: "关闭" }
         });
       }
