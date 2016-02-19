@@ -90,6 +90,12 @@ html {
   margin: 0.5rem auto;
   border-radius: 0.5rem;
 }
+.quiz .panel{
+  width: 12.5rem;
+  text-align: center;
+  margin: 0px auto;
+  font-size: 0.6rem;
+}
 .question .content {
   font-weight: bold;
 }

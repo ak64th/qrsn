@@ -48,9 +48,12 @@
   <% } %>
   <input type="submit" class="submit button" value="开始游戏">
 </script>
-<script type='text/template' id='tpl_quiz_panel'>
-  <span>已回答<%= count %>题</span>
-  <span>得到<%= points %>分</span>
+<script type="text/template" id="tpl_quiz">
+  <section class="panel">
+    <div id="timer">剩余0秒<div>
+    <div>已回答<span id="count">0</span>题</div>
+    <div>得到<span id="points">0</span>分</div>
+  </section>
 </script>
 <script type="text/template" id="tpl_question">
   <% if(timeLimit){ %>
@@ -93,10 +96,10 @@ var game_code = window.location.hash.slice(1);
 var data_url_root = '/data/' + game_code + '/';
 $.getJSON(data_url_root + 'config.json').then(function(data){
   application = new app.ApplicationView({game_code: game_code, config: data});
-  var view = new app.RankView();
-  application.loadView(view);
+  // var view = new app.RankView();
+  // application.loadView(view);
   // application.run();
-  // application.startQuiz();
+  application.startQuiz();
 });
 </script>
 </body>

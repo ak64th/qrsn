@@ -335,26 +335,23 @@ void 0===c?d&&"get"in d&&null!==(e=d.get(a,b))?e:(e=n.find.attr(a,b),null==e?voi
 
   app.QuizBaseView = Backbone.View.extend({
     tagName: 'div',
+    className: 'quiz',
+    template: function() { return $('#tpl_quiz').html(); },
     initialize: function(options){
       this.config = options.config;
       this.gameDataRoot = options.gameDataRoot;
       this.questions = new app.QuestionCollection();
     },
     render: function(){
-      // init a panel for rendering current points and answered questions number
-      this.panelView = new app.QuizPanelView({
-        collection: this.questions,
-        config: this.config
-      });
-      this.$el.append(this.panelView.render().el);
       // Once get a question start the quiz
+      this.$el.html(this.template());
       this.listenToOnce(this.questions, 'add', this.start);
+      this.listenTo(this.questions, 'change:answered', this.updatePanel);
       this.download();
       return this;
     },
     close: function(){
       this.questionView && this.questionView.close();
-      this.panelView.remove();
       this.remove();
     },
     download: function(){
@@ -375,6 +372,14 @@ void 0===c?d&&"get"in d&&null!==(e=d.get(a,b))?e:(e=n.find.attr(a,b),null==e?voi
       this.listenToOnce(this.questionView, 'finish', this.finishQuestion);
       this.$el.append(this.questionView.render().el);
       console.log(this.currentQuestion.getAnswerCodes().join());
+    },
+    updatePanel: function(){
+      var count = this.questions.filter({'answered': true}).length,
+          questionPoints = this.config.question_points;
+      var points = this.questions.totalPoints(questionPoints);
+      this.$('#count').html(count);
+      this.$('#points').html(points);
+      console.log('update panel', count, points);
     },
     finishQuestion: function(){
       //Todo: ajax to server
@@ -489,23 +494,6 @@ void 0===c?d&&"get"in d&&null!==(e=d.get(a,b))?e:(e=n.find.attr(a,b),null==e?voi
     hasNext: function(){
       return this.currentQuestion.isCorrect();
     }
-  });
-
-  app.QuizPanelView = Backbone.View.extend({
-    tagName: 'div',
-    className: 'quiz_panel',
-    template: _.template($('#tpl_quiz_panel').html()),
-    initialize: function(options){
-      this.config = options.config;
-      this.listenTo(this.collection, 'change:answered', this.render);
-    },
-    render: function(){
-      var count = this.collection.filter({'answered': true}).length,
-          questionPoints = this.config.question_points;
-      var points = this.collection.totalPoints(questionPoints);
-      this.$el.html(this.template({count: count, points: points}));
-      return this;
-    },
   });
 
   root.app = app;
