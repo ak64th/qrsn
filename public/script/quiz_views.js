@@ -5,15 +5,16 @@
   app.QuizBaseView = Backbone.View.extend({
     tagName: 'div',
     className: 'quiz',
-    template: function() { return $('#tpl_quiz').html(); },
+    template: _.template($('#tpl_quiz').html()),
     initialize: function(options){
       this.config = options.config;
       this.gameDataRoot = options.gameDataRoot;
       this.questions = new app.QuestionCollection();
+      this.timeLimit = this.config.time_per_question || null;
     },
     render: function(){
+      this.$el.html(this.template({timeLimit: this.timeLimit}));
       // Once get a question start the quiz
-      this.$el.html(this.template());
       this.listenToOnce(this.questions, 'add', this.start);
       this.listenTo(this.questions, 'change:answered', this.updatePanel);
       this.download();
@@ -34,12 +35,10 @@
       this.currentQuestion = _.sample(this.questions.filter({'answered': false}));
       this.preQuestion && this.preQuestion();
       this.questionView && this.questionView.remove();
-      this.questionView = new app.QuestionView({
-        model: this.currentQuestion,
-        timeLimit: this.config.time_per_question
-      });
+      this.questionView = new app.QuestionView({model: this.currentQuestion});
       this.listenToOnce(this.questionView, 'finish', this.finishQuestion);
       this.$el.append(this.questionView.render().el);
+      if(this.timeLimit) this.startTimer();
       console.log(this.currentQuestion.getAnswerCodes().join());
     },
     updatePanel: function(){
@@ -52,13 +51,14 @@
     },
     finishQuestion: function(){
       //Todo: ajax to server
+      this.clearTimer();
       this.postQuestion && this.postQuestion();
-      var current = this.currentQuestion;
-      var showAnswer = (this.config.show_answer || false),
+      var current = this.currentQuestion,
+          showAnswer = (this.config.show_answer || false),
           timeout = current.get('timeout'),
-          message = timeout ? '亲，回答超时，注意答题时间哦~' : (
-            current.isCorrect() ? '亲，答题正确，好厉害哦~' : '亲，答题错误。'
-          )
+          message = current.isCorrect() ? '亲，答题正确，好厉害哦~' : (
+             timeout ? '亲，回答超时，注意答题时间哦~' : '亲，答题错误。'
+          ),
           emotion = timeout ? 'sweat' : (
             current.isCorrect() ? 'tongue' : 'tears'
           );
@@ -80,6 +80,23 @@
           }, this)
         });
       }
+    },
+    startTimer: function(){
+      var counter = 0, timeLimit = this.timeLimit;
+      var callback = function(){
+        remaining = timeLimit - ++counter;
+        this.$('#timer').html( remaining );
+        if (remaining < 1) this.timeout();
+      };
+      this.timer = setInterval(_.bind(callback, this), 1000);
+    },
+    timeout: function(){
+      this.clearTimer();
+      this.questionView.trigger('timeout');
+    },
+    clearTimer: function(){
+      this.timer && clearInterval(this.timer);
+      this.timer = null;
     },
     hasNext: function(){
       throw new Error('Not implemented');

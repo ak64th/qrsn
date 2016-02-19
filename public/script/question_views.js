@@ -17,15 +17,13 @@
       });
       this.model.set('options', questionOptions);
       this.listenTo(questionOptions, 'change:checked', this.toggleChecked);
+      this.on('timeout', this.onTimeout, this);
       this.optionViews = [];
-      this.timeLimit = options.timeLimit || 0;
     },
     render: function(){
       var data = this.model.toJSON();
-      data.timeLimit = this.timeLimit;
       this.$el.html(this.template(data));
       this.renderAllOptions();
-      this.startTimer();
       return this;
     },
     renderOption: function(model){
@@ -51,13 +49,10 @@
       }
     },
     onSubmit: function(){
-      if (!_.isEmpty(this.model.get('selected'))){
-        this.clearTimer();
-        this.finish();
-      }
+      if (_.isEmpty(this.model.get('selected'))) return false;
+      this.finish();
     },
     onTimeout: function(){
-      this.clearTimer();
       this.model.set('timeout', true);
       this.finish();
     },
@@ -65,23 +60,7 @@
       this.model.set('answered', true);
       this.trigger('finish', this.model);
     },
-    startTimer: function(){
-      if (!this.timeLimit || this.timeLimit < 1) return null;
-      var counter = 0, timeLimit = this.timeLimit;
-      var callback = function(){
-        remaining = timeLimit - ++counter;
-        // console.log("counter #", counter, timeLimit);
-        this.$('.timer').html( remaining );
-        if (remaining < 1) this.onTimeout();
-      };
-      this.timer = setInterval(_.bind(callback, this), 1000);
-    },
-    clearTimer: function(){
-      this.timer && clearInterval(this.timer);
-      this.timer = null;
-    },
     close: function(){
-      this.clearTimer();
       _.each(this.optionViews, function(view){ view.remove(); });
       this.remove();
     }

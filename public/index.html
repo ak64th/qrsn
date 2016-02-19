@@ -50,15 +50,14 @@
 </script>
 <script type="text/template" id="tpl_quiz">
   <section class="panel">
-    <div id="timer">剩余0秒<div>
+    <% if (timeLimit) { %>
+      <div>剩余<span id="timer"><%= timeLimit %></span>秒<div>
+    <% } %>
     <div>已回答<span id="count">0</span>题</div>
     <div>得到<span id="points">0</span>分</div>
   </section>
 </script>
 <script type="text/template" id="tpl_question">
-  <% if(timeLimit){ %>
-  剩余<span class="timer"><%- timeLimit %></span>秒
-  <% } %>
   <div class="content"><%= content %></div>
   <div class="option_list"></div>
   <input type="submit" class="submit button" value="提交">
