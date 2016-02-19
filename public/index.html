@@ -69,9 +69,13 @@
   <label for='option-<%= id %>'><%= code %>.<%= content %></label>
 </script>
 <script type="text/template" id="tpl_rank">
-  <section>
-  这一局中我获得了<span class="redWords"><%=points%></span>分（总分是<%=maxPoints%>分），当前排名第<span class="redWords"><%=rank%></span>名，我的最好成绩
-  是<span class="redWords"><%=bestPoints%></span>分，最好排名是第<span class="redWords"><%=bestRank%></span>名。
+  <i class="share"/>
+  <section class="message">
+    <i class='banner'/>
+    这一局中我获得了<span class="redWords"><%=points%></span>分（总分是<%=maxPoints%>分），当前排名第<span class="redWords"><%=rank%></span>名，我的最好成绩
+    是<span class="redWords"><%=bestPoints%></span>分，最好排名是第<span class="redWords"><%=bestRank%></span>名。
+    <p>还想获得更高成绩，那就再来挑战一局吧！</p>
+    <input type="submit" class="submit button" value="再来一局">
   </section>
 </script>
 <script type="text/template" id="tpl_modal">
@@ -89,28 +93,10 @@ var game_code = window.location.hash.slice(1);
 var data_url_root = '/data/' + game_code + '/';
 $.getJSON(data_url_root + 'config.json').then(function(data){
   application = new app.ApplicationView({game_code: game_code, config: data});
-  application.run();
+  var view = new app.RankView();
+  application.loadView(view);
+  // application.run();
   // application.startQuiz();
-  // var errorView = null;
-  // var used_chances = parseInt(localStorage.getItem(game_code + '_count'));
-  // if (used_chances > parseInt(data.max_chances)){
-  //   errorView = new app.RejectionNoMoreChanceView();
-  // } else {
-  //   var now = new Date();
-  //   var start_at = new Date(data.start_at);
-  //   var end_at = new Date(data.end_at);
-  //   if(now < start_at){
-  //     errorView = new app.RejectionTooEarlyView();
-  //   } else if (now > end_at){
-  //     errorView = new app.RejectionTooLateView();
-  //   }
-  // };
-  // if(errorView){
-  //   application.loadView(errorView);
-  // } else {
-  //   localStorage.setItem(game_code + '_count', used_chances + 1);
-  //   application.prepareQuiz();
-  // }
 });
 </script>
 </body>
