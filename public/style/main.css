@@ -45,7 +45,7 @@ html {
   width: 12.5rem;
   padding: 0.5rem 1rem;
   box-sizing: border-box;
-  margin: 1rem auto 0px;
+  margin: 0.5rem auto;
   background-color: #FFF5C2;
   opacity: 0.8;
   border-radius: 0.3rem;
@@ -90,11 +90,40 @@ html {
   margin: 0.5rem auto;
   border-radius: 0.5rem;
 }
-.quiz .panel{
+.quiz {
+  margin-top: 1rem;
+}
+.quiz .panel {
   width: 12.5rem;
   text-align: center;
   margin: 0px auto;
   font-size: 0.6rem;
+}
+.quiz .timer {
+  width: 4rem;
+  margin: 0 auto 0.5rem;
+}
+.quiz .clock {
+  display: block;
+  background: transparent url("../image/clock.png") no-repeat;
+  background-size: contain;
+  width: 1rem;
+  height: 1rem;
+  display: inline-block;
+  float:left;
+}
+.quiz .remaining {
+  background-color: #FEC434;
+  height: 1rem;
+  line-height: 1rem;
+  border-radius: 0.3rem;
+  display: block;
+  font-size: 0.7rem;
+  width: 2rem;
+  margin-left: 1rem;
+}
+.quiz .panel .grade .tag{
+  margin:0 0.5rem;
 }
 .question .content {
   font-weight: bold;

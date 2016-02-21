@@ -85,7 +85,16 @@
       var counter = 0, timeLimit = this.timeLimit;
       var callback = function(){
         remaining = timeLimit - ++counter;
-        this.$('#timer').html( remaining );
+        function formatSeconds(seconds){
+          var minutes = parseInt(seconds / 60);
+          var seconds = seconds % 60;
+          var formated = _.map([minutes, seconds], function(s){
+            if (s > 9) return '' + s;
+            return '0' + s;
+          })
+          return formated.join(':');
+        }
+        this.$('#timer').html( formatSeconds(remaining) );
         if (remaining < 1) this.timeout();
       };
       this.timer = setInterval(_.bind(callback, this), 1000);

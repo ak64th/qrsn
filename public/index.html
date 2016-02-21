@@ -51,11 +51,16 @@
 <script type="text/template" id="tpl_quiz">
   <section class="panel">
     <% if (timeLimit) { %>
-      <div>剩余<span id="timer"><%= timeLimit %></span>秒<div>
+    <section class='timer'>
+      <i class="clock"/>
+      <span class="remaining" id="timer"><%= timeLimit %></span>
+    </section>
     <% } %>
-    <div>已回答<span id="count">0</span>题</div>
-    <div>得到<span id="points">0</span>分</div>
-  </section>
+    <section class="grade">
+      <span class="tag">已回答<span id="count">0</span>题</span>
+      <span class="tag">得到<span id="points">0</span>分</span>
+    </section>
+  </div>
 </script>
 <script type="text/template" id="tpl_question">
   <div class="content"><%= content %></div>
