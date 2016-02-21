@@ -82,22 +82,26 @@
       }
     },
     startTimer: function(){
-      var counter = 0, timeLimit = this.timeLimit;
+      var counter = 0,
+          timeLimit = this.timeLimit;
+      this.updateTimer(timeLimit);
       var callback = function(){
         remaining = timeLimit - ++counter;
-        function formatSeconds(seconds){
-          var minutes = parseInt(seconds / 60);
-          var seconds = seconds % 60;
-          var formated = _.map([minutes, seconds], function(s){
-            if (s > 9) return '' + s;
-            return '0' + s;
-          })
-          return formated.join(':');
-        }
-        this.$('#timer').html( formatSeconds(remaining) );
+        this.updateTimer(remaining);
         if (remaining < 1) this.timeout();
       };
       this.timer = setInterval(_.bind(callback, this), 1000);
+    },
+    updateTimer: function(remaining){
+      function formatSeconds(seconds){
+        var minutes = parseInt(seconds / 60);
+        var seconds = seconds % 60;
+        return _.map([minutes, seconds], function(s){
+          if (s > 9) return '' + s;
+          return '0' + s;
+        }).join(':');
+      }
+      this.$('#timer').html( formatSeconds(remaining) );
     },
     timeout: function(){
       this.clearTimer();
