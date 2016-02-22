@@ -1,0 +1,86 @@
+/* CSS Mobile Reset */
+html, body {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+h1, h2, h3, h4, h5, h6{ font-weight: normal; }
+img { border: 0; max-width: 100%; }
+a{text-decoration: none;}
+
+html {
+  font-size: 20px;font-size: 6vw;
+  background: url('../image/bg.jpg') no-repeat center center fixed;
+  background-size: 100% 100%;
+}
+.reject {
+  margin: 5rem auto 0;
+  width: 9rem;
+  font-size: 0.6rem;
+  text-align: center;
+  padding-top: 10rem;
+}
+.reject .emotion {
+  display: block;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  height: 15rem;
+  position: absolute;
+  width: 9rem;
+  top: 5rem;
+  z-index: -1;
+}
+.reject .emotion_cry{
+  background-image: url("../image/reject_cry.png");
+}
+.reject .emotion_laugh{
+  background-image: url("../image/reject_laugh.png");
+}
+.welcome {
+  width: 14rem;
+  margin: 0px auto;
+  font-size: 0.75rem;
+}
+.welcome .intro {
+  height: 6rem;
+  background-color: #FFF;
+  font-size: 0.6rem;
+  padding: 0.625rem;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+.welcome .intro p:first-child {
+  margin-top: 0px;
+}
+.welcome .banner {
+  background: transparent url("../image/introduction.png") no-repeat;
+  background-size: 14rem;
+  width: 14rem;
+  height: 4rem;
+  display: block;
+  margin: 0.5rem auto;
+}
+.welcome .info > h3 {
+  margin: 0.5rem 0 0;
+  color: #FFF;
+}
+.welcome .info > input {
+  height: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 0px none;
+  margin-top: 0.5rem;
+}
+.welcome .submit {
+  background: url("../image/button_red.png") no-repeat;
+  background-size: contain;
+  width: 6.5rem;
+  height: 2rem;
+  line-height: 2rem;
+  text-align: center;
+  display: block;
+  font-size: 1rem;
+  color: #FFF;
+  margin: 1rem auto;
+  border: 0px;
+}
