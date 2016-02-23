@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html>
 <head lang="en">
   <meta charset="UTF-8">
   <title>一战到底</title>
-  <!-- <link rel="stylesheet" type="text/css" href="theme1/style/main.css"/> -->
+  <link rel="stylesheet" type="text/css" href="theme2/style/main.css"/>
 </head>
 <body>
 <div id="app_container">
@@ -57,8 +56,8 @@
     </section>
     <% } %>
     <section class="grade">
-      <span class="tag">已回答<span id="count">0</span>题</span>
-      <span class="tag">得到<span id="points">0</span>分</span>
+      <span class="tag">第<span id="count">0</span>题</span>
+      <span class="tag"><span id="points">0</span>分</span>
     </section>
   </div>
 </script>
@@ -98,13 +97,10 @@
 var application = null;
 var game_code = window.location.hash.slice(1);
 var data_url_root = '/data/' + game_code + '/';
-$('head').append('<link rel="stylesheet" type="text/css" href="theme1/style/main.css"/>');
+// $('head').append('<link rel="stylesheet" type="text/css" href="theme1/style/main.css"/>');
 $.getJSON(data_url_root + 'config.json').then(function(data){
   application = new app.ApplicationView({game_code: game_code, config: data});
-  // var view = new app.RankView();
-  // application.loadView(view);
-  // application.run();
-  application.startQuiz();
+  application.run();
 });
 </script>
 </body>
