@@ -10,7 +10,6 @@
       this.config = options.config;
       this.gameDataRoot = options.gameDataRoot;
       this.questions = new app.QuestionCollection();
-      this.timeLimit = this.config.time_per_question || null;
     },
     render: function(){
       this.$el.html(this.template({timeLimit: this.timeLimit}));
@@ -38,8 +37,10 @@
       this.questionView = new app.QuestionView({model: this.currentQuestion});
       this.listenToOnce(this.questionView, 'finish', this.finishQuestion);
       this.$el.append(this.questionView.render().el);
-      if(this.timeLimit) this.startTimer();
       console.log(this.currentQuestion.getAnswerCodes().join());
+    },
+    timeLimit: function(){
+      return this.config.time_per_question || null;
     },
     updatePanel: function(){
       var count = this.questions.filter({'answered': true}).length,
@@ -51,7 +52,6 @@
     },
     finishQuestion: function(){
       //Todo: ajax to server
-      this.clearTimer();
       this.postQuestion && this.postQuestion();
       var current = this.currentQuestion,
           showAnswer = (this.config.show_answer || false),
@@ -71,6 +71,7 @@
           callback: _.bind(this.play, this)
         });
       } else {
+        this.postQuiz && this.postQuiz();
         app.modal({
           message: message + "游戏结束",
           button: { text: "查看结果" },
@@ -83,7 +84,7 @@
     },
     startTimer: function(){
       var counter = 0,
-          timeLimit = this.timeLimit;
+          timeLimit = this.timeLimit();
       this.updateTimer(timeLimit);
       var callback = function(){
         remaining = timeLimit - ++counter;
@@ -117,6 +118,12 @@
   });
 
   app.OrdinaryQuizView = app.QuizBaseView.extend({
+    preQuestion: function(){
+      if(this.timeLimit()) this.startTimer();
+    },
+    postQuestion: function(){
+      this.clearTimer();
+    },
     download: _.throttle(function(){
       // save the unloaded files
       if(!this.unloadedFiles){
@@ -178,11 +185,18 @@
   });
 
   app.TimeLimitQuizView = app.ContinuousQuizView.extend({
+    timeLimit: function(){
+      return this.config.time_per_quiz || 300;
+    },
     preQuiz: function(){
+      if(this.timeLimit()) this.startTimer();
       this.startTime = new Date();
     },
+    postQuiz: function(){
+      this.clearTimer();
+    },
     hasNext: function(){
-      var limit = this.config.time_per_quiz;
+      var limit = this.timeLimit();
           current = new Date();
       console.log('time limit', limit, (current - this.startTime)/1000);
       return current - this.startTime < limit * 1000;
@@ -190,6 +204,9 @@
   });
 
   app.ChallengeQuizView = app.ContinuousQuizView.extend({
+    timeLimit: function(){
+      return null;
+    },
     hasNext: function(){
       return this.currentQuestion.isCorrect();
     }
