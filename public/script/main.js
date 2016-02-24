@@ -37,6 +37,24 @@
       this.view = view;
       this.$el.append(this.view.render().el);
     },
+    loadStyle: function(){
+      var style, quizType = this.quizConfig['type'];
+      switch (quizType) {
+        case app.QUIZ_TYPE.ORDINARY:
+          style = 'theme1/style/main.css';
+          break;
+        case app.QUIZ_TYPE.TIME_LIMIT:
+          style = 'theme2/style/main.css';
+          break;
+        case app.QUIZ_TYPE.CHALLENGE:
+          style = 'theme3/style/main.css';
+          break;
+        default:
+          throw new Error('Unknown Quiz Type');
+      }
+      console.log('style', style);
+      $('head').append('<link rel="stylesheet" type="text/css" href="' + style + '"/>');
+    },
     prepareQuiz: function() {
       var view = new app.WelcomeView({
         content: this.quizConfig.welcome,
@@ -51,6 +69,7 @@
       //Todo: send args to server
 
       var ViewClass, quizType = this.quizConfig['type'];
+      var style = '';
       switch (quizType) {
         case app.QUIZ_TYPE.ORDINARY:
           ViewClass = app.OrdinaryQuizView;
